@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Anatomy } from './Anatomy';
 import { AssemblyAnimation } from './AssemblyAnimation';
-import { EPS_TREE, findNode, PowerFlow, SubsystemTree } from './PowerSystem';
+import { PowerFlow, SubsystemTree } from './PowerSystem';
+import { findNode, TREES } from './content/trees';
 import { HowItWorks, Roadmap, Types } from './chapters';
 import { EXAMPLES, FACTS, FAILURE_FACTS, SUBSYSTEMS } from './learn';
 
@@ -94,9 +95,16 @@ function WhatIsIt() {
 
 function Inside() {
   const [part, setPart] = useState<string>('eps');
-  const [epsNode, setEpsNode] = useState('eps');
+  const [nodeId, setNodeId] = useState('eps');
   const chosen = SUBSYSTEMS.find((s) => s.id === part) ?? SUBSYSTEMS[1];
-  const node = findNode(EPS_TREE, epsNode) ?? EPS_TREE;
+  const tree = TREES[part] ?? TREES.eps;
+  const node = findNode(tree, nodeId) ?? tree;
+
+  // Selecting a different part of the satellite opens that part's tree.
+  const choosePart = (id: string) => {
+    setPart(id);
+    setNodeId(id);
+  };
 
   return (
     <div className="chapter">
@@ -109,12 +117,12 @@ function Inside() {
 
       <div className="anatomy-layout">
         <div className="anatomy-wrap">
-          <Anatomy selected={part} onSelect={setPart} />
+          <Anatomy selected={part} onSelect={choosePart} />
         </div>
         <div className="part-detail">
           <div className="part-tabs">
             {SUBSYSTEMS.map((s) => (
-              <button key={s.id} aria-pressed={part === s.id} onClick={() => setPart(s.id)}>
+              <button key={s.id} aria-pressed={part === s.id} onClick={() => choosePart(s.id)}>
                 {s.name}
               </button>
             ))}
@@ -138,14 +146,15 @@ function Inside() {
       </p>
       <AssemblyAnimation />
 
-      <h3 className="sub">Opening up one part: the power system</h3>
+      <h3 className="sub">Opening up the {chosen.name.toLowerCase()}</h3>
       <p className="lede">
-        Each of those parts is a whole subject of its own. Here is the power system
-        broken down &mdash; click anything in the tree to read about it.
+        Each of those parts is a whole subject of its own. Here is the{' '}
+        {chosen.name.toLowerCase()} broken down &mdash; click anything in the tree to
+        read about it, or pick a different part above to open its own tree.
       </p>
 
       <div className="deep-dive">
-        <SubsystemTree tree={EPS_TREE} selected={epsNode} onSelect={setEpsNode} />
+        <SubsystemTree tree={tree} selected={nodeId} onSelect={setNodeId} />
         <div className="dd-detail">
           <h4>{node.label}</h4>
           <p className="dd-short">{node.short}</p>
@@ -153,12 +162,17 @@ function Inside() {
         </div>
       </div>
 
-      <h3 className="sub">How the electricity actually moves</h3>
-      <p className="lede">
-        Switch between sunlight and shadow. Watch which way the dots travel &mdash;
-        that reversal is the whole problem the power system exists to solve.
-      </p>
-      <PowerFlow />
+      {part === 'eps' && (
+        <>
+          <h3 className="sub">How the electricity actually moves</h3>
+          <p className="lede">
+            Switch between sunlight and shadow. Watch which way the dots travel
+            &mdash; that reversal is the whole problem the power system exists to
+            solve.
+          </p>
+          <PowerFlow />
+        </>
+      )}
     </div>
   );
 }

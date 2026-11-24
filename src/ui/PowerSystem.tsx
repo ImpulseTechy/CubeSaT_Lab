@@ -8,130 +8,13 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import type { TreeNode } from './content/trees';
 
 // ---------------------------------------------------------------------------
-// The tree
+// The tree view
+//
+// Trees themselves live in content/trees.ts, one per subsystem.
 // ---------------------------------------------------------------------------
-
-export interface TreeNode {
-  id: string;
-  label: string;
-  short: string;
-  detail: string;
-  children?: TreeNode[];
-}
-
-export const EPS_TREE: TreeNode = {
-  id: 'eps',
-  label: 'Power system',
-  short: 'Everything to do with electricity on board.',
-  detail:
-    'Without this nothing else runs. Of every CubeSat failure that has been written up, about one in seven traces back to power.',
-  children: [
-    {
-      id: 'make',
-      label: 'Making it',
-      short: 'Turning sunlight into electricity.',
-      detail: 'Solar cells are the only source of new energy a satellite has.',
-      children: [
-        {
-          id: 'cells',
-          label: 'Solar cells',
-          short: 'Convert about a third of the sunlight hitting them.',
-          detail:
-            'Space-grade cells are far better than the ones on a house roof — roughly 30% efficient instead of 20% — because every gram and every centimetre counts. They are also brittle and expensive, which is why they are glued flat to the sides.',
-        },
-        {
-          id: 'angle',
-          label: 'Why the angle matters',
-          short: 'A panel edge-on to the Sun makes almost nothing.',
-          detail:
-            'A panel facing the Sun squarely catches all the light that falls on it. Tilt it and it catches less, in proportion to the tilt. At 60 degrees off you get half. Edge-on you get nothing at all. This is why which way the satellite points changes the power budget so dramatically.',
-        },
-        {
-          id: 'deploy',
-          label: 'Stuck-on or fold-out',
-          short: 'Fold-out wings catch roughly three times more.',
-          detail:
-            'Cells glued to the body are simple and safe but limited by the size of the satellite. Fold-out wings unfold once in orbit and can triple your power — at the cost of real weight, and a mechanism that has to work first time with nobody there to help.',
-        },
-      ],
-    },
-    {
-      id: 'store',
-      label: 'Storing it',
-      short: 'Getting through Earth’s shadow.',
-      detail: 'For about 35 minutes of every lap the panels make nothing at all.',
-      children: [
-        {
-          id: 'battery',
-          label: 'The battery',
-          short: 'Rechargeable cells, much like a phone’s.',
-          detail:
-            'Usually the same chemistry as a laptop battery. It charges whenever there is spare sunlight and discharges in the dark. It will do this roughly 5,500 times a year, every year, with no way to replace it.',
-        },
-        {
-          id: 'cycles',
-          label: 'Shallow sips last longer',
-          short: 'Draining it hard every lap wears it out fast.',
-          detail:
-            'A battery that drops to 10% every lap will not last the mission. One that only dips to 85% can last for years. This is why engineers deliberately fit a bigger battery than they strictly need — not for capacity, but so each lap only takes a small sip.',
-        },
-        {
-          id: 'cold',
-          label: 'The freezing problem',
-          short: 'Charging a cold battery damages it permanently.',
-          detail:
-            'Below 0 °C, charging a lithium battery plates metal inside it and ruins it for good. Satellites in shadow get very cold, so many carry a small electric heater — which itself draws power from the very battery it is protecting.',
-        },
-      ],
-    },
-    {
-      id: 'share',
-      label: 'Sharing it out',
-      short: 'Getting the right power to the right part.',
-      detail: 'A board in the middle of the stack does the distributing.',
-      children: [
-        {
-          id: 'board',
-          label: 'The power board',
-          short: 'The switchboard of the satellite.',
-          detail:
-            'It takes the messy, varying output of the solar cells, turns it into the steady voltages each part needs, and can cut power to anything that misbehaves. It also protects the battery from being over-charged or completely drained.',
-        },
-        {
-          id: 'mppt',
-          label: 'Squeezing more out',
-          short: 'Smart boards get about 5% more from the same panels.',
-          detail:
-            'Solar cells have one sweet spot where they give the most power, and it moves as they heat up and cool down. A smarter board constantly hunts for that spot. It is a small gain, but it is free weight-wise — which makes it one of the cheapest wins available.',
-        },
-      ],
-    },
-    {
-      id: 'spend',
-      label: 'Spending it',
-      short: 'Where the electricity actually goes.',
-      detail: 'Every part draws some. The instrument usually draws the most.',
-      children: [
-        {
-          id: 'loads',
-          label: 'What each part draws',
-          short: 'The computer sips; the camera and radio gulp.',
-          detail:
-            'A computer might use less than half a watt continuously. A camera can use six watts while it is running, and a transmitter several more while it is sending. The continuous small draws add up to more than people expect.',
-        },
-        {
-          id: 'duty',
-          label: 'How often you run things',
-          short: 'The single most powerful choice you make.',
-          detail:
-            'You cannot change physics, but you can change how often the hungry parts are switched on. Running a camera a quarter of the time instead of all the time is often the difference between a satellite that survives and one that does not. It is also the first thing to try when your design fails.',
-        },
-      ],
-    },
-  ],
-};
 
 export function SubsystemTree({
   tree,
@@ -169,15 +52,6 @@ export function SubsystemTree({
       </div>
     </div>
   );
-}
-
-export function findNode(tree: TreeNode, id: string): TreeNode | null {
-  if (tree.id === id) return tree;
-  for (const c of tree.children ?? []) {
-    const f = findNode(c, id);
-    if (f) return f;
-  }
-  return null;
 }
 
 // ---------------------------------------------------------------------------

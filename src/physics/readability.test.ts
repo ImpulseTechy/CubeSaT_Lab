@@ -21,6 +21,7 @@ import { ATTITUDE_ASSUMPTIONS } from './power';
 import { DAY_IN_THE_LIFE, THREE_JOBS, WORKS_INTRO } from '../ui/content/works';
 import { MISSION_TYPES, SIZE_TYPES } from '../ui/content/types';
 import { STAGES } from '../ui/content/roadmap';
+import { flatten, TREES } from '../ui/content/trees';
 
 /**
  * Terms that must never appear in learner-facing copy without being explained.
@@ -217,6 +218,79 @@ describe('the beginner chapters stay in plain language', () => {
     for (const s of STAGES) {
       expect(s.time.length, s.title).toBeGreaterThan(3);
       expect(s.cost.length, s.title).toBeGreaterThan(3);
+    }
+  });
+});
+
+describe('every subsystem tree reads plainly', () => {
+  const nodes = Object.values(TREES).flatMap(flatten);
+
+  it('covers all eight subsystems', () => {
+    expect(Object.keys(TREES)).toHaveLength(8);
+    expect(nodes.length).toBeGreaterThan(80);
+  });
+
+  const BANNED_TREE = [
+    /\bEPS\b/, /\bADCS\b/, /\bOBC\b/, /\bCOTS\b/, /\bLEO\b/, /\bRF\b/,
+    /\bmagnetorquer/i, /\bhysteresis\b/i, /\bMPPT\b/, /\bdetumbl/i,
+    /\bnadir\b/i, /\bapogee\b/i, /\bperigee\b/i, /\binclination\b/i,
+    /\btelemetry\b/i, /\bdownlink\b/i, /\buplink\b/i, /\bEb\/N0\b/i,
+    /\bduty cycle\b/i, /\bdepth of discharge\b/i, /\bsubsystem\b/i,
+    /\bdeployable/i, /\bTLE\b/, /\bSGP4\b/, /\bslant range\b/i,
+    /\bemissivity\b/i, /\babsorptivity\b/i, /\bwatchdog timer\b/i,
+  ];
+
+  for (const rx of BANNED_TREE) {
+    it(`no tree node says ${rx.source}`, () => {
+      const bad = nodes
+        .filter((n) => rx.test(`${n.label} ${n.short} ${n.detail}`))
+        .map((n) => `${n.id}: ${n.label}`);
+      expect(bad).toEqual([]);
+    });
+  }
+
+  it('every node has a label and a one-line summary', () => {
+    for (const n of nodes) {
+      expect(n.label.length, n.id).toBeGreaterThan(2);
+      expect(n.short.length, `${n.id} short`).toBeGreaterThan(18);
+    }
+  });
+
+  it('leaves carry the real explanation', () => {
+    // Branches exist to group and frame; the substance belongs in the leaves,
+    // which are what a learner actually clicks to understand something.
+    const leaves = nodes.filter((n) => !n.children?.length);
+    expect(leaves.length).toBeGreaterThan(50);
+    for (const n of leaves) {
+      expect(n.detail.length, `${n.id} detail`).toBeGreaterThan(120);
+    }
+  });
+
+  it('branches frame what is underneath them', () => {
+    const branches = nodes.filter((n) => n.children?.length);
+    for (const n of branches) {
+      expect(n.detail.length, `${n.id} detail`).toBeGreaterThan(25);
+    }
+  });
+
+  it('gives every subsystem at least three branches', () => {
+    for (const [id, tree] of Object.entries(TREES)) {
+      expect(tree.children?.length ?? 0, id).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('gives every branch at least two things to read', () => {
+    for (const [id, tree] of Object.entries(TREES)) {
+      for (const b of tree.children ?? []) {
+        expect(b.children?.length ?? 0, `${id} > ${b.id}`).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+
+  it('uses no node id twice within a tree', () => {
+    for (const [id, tree] of Object.entries(TREES)) {
+      const ids = flatten(tree).map((n) => n.id);
+      expect(new Set(ids).size, id).toBe(ids.length);
     }
   });
 });

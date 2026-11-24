@@ -58,8 +58,10 @@ Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no
 3. **What types are there?** — five sizes drawn to scale as rotating 3D cubes, plus six kinds
    of mission and what makes each one hard
 4. **What is inside?** — an interactive cutaway; click any part for what it does and how it
-   fails. Build a 3U yourself part by part and watch the weight climb, then open up the power
-   system: a subsystem tree and an animated flow diagram whose direction reverses in shadow
+   fails. Build a 3U yourself part by part and watch the weight climb. Then open up any of the
+   eight subsystems as its own tree — 61 topics in all, from why a cold battery is ruined by
+   charging to why a tape-measure aerial has to spring out first time — plus an animated power
+   flow whose direction reverses in Earth's shadow
 5. **Why do they fail?** — the real numbers, and the finding that justifies this whole project
 6. **How do I build one?** — an eight-stage roadmap with honest timescales, costs, what goes
    wrong at each stage, and how to tell when you have finished it
