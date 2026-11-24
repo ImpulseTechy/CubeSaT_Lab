@@ -34,7 +34,34 @@ first or unique.
 
 ## Status
 
-Research complete. **v1 defined — see [docs/06-v1-spec.md](docs/06-v1-spec.md).** Build not started.
+**v1 is running.** Physics core validated (81 tests), UI complete, three guided missions.
+
+```bash
+npm install && npm run dev
+```
+
+Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no accounts.
+
+### What works today
+
+- Configure a 1U–6U CubeSat from a parts catalogue; live mass budget against CDS Rev. 14.1
+- Orbit selection with eclipse geometry, beta angle and J2 nodal regression
+- Battery state-of-charge over six orbits with eclipse bands and the brownout floor
+- 24-hour ground track with passes counted from real geometry
+- Range-varying link budget and the data-closure verdict
+- **Mass / Power / Data verdict cards** with quantified diagnosis and cross-subsystem fixes
+- Every number expands to formula, substituted values, assumptions and source
+- Three guided missions with predict-before-run and completion detection
+
+### Validated against
+
+| Check | Result |
+|---|---|
+| Period, velocity, eclipse at 525 km | Exact against closed form (95.13 min, 7.599 km/s, 35.68 min) |
+| Slant range at 10° elevation | 1,755.9 km — independently matches the blueprint figure |
+| Solar array output | Calibrated to real CubeSat figures (3U body ~3.6 W orbit-average) |
+| Pass counts | 4/day mid-latitude, 11/day polar station — both match real-world values |
+| FSPL | Closed-form checks at 437.5 MHz; +6 dB per range doubling |
 
 ## Documents
 
