@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { OrbitAnimation } from './OrbitAnimation';
+import { DetumbleAnimation } from './DetumbleAnimation';
 import { Cube, CUBE_SHAPES, SizeComparison } from './CubeStack';
 import { DAY_IN_THE_LIFE, THREE_JOBS, WORKS_INTRO } from './content/works';
 import { MISSION_TYPES, SIZE_TYPES, TYPES_INTRO } from './content/types';
@@ -52,6 +53,15 @@ export function HowItWorks() {
         that makes plenty of power and takes beautiful photographs but cannot send
         them home has achieved nothing anybody on Earth will ever see.
       </p>
+
+      <h3 className="sub">Before any of that can happen: stopping the spin</h3>
+      <p className="lede">
+        The launcher does not place a satellite gently. It throws it out, spinning.
+        Before it can charge properly or talk to you, it has to get that under
+        control &mdash; using nothing but Earth&rsquo;s magnetic field, because in
+        space there is nothing else to push against.
+      </p>
+      <DetumbleAnimation />
 
       <h3 className="sub">A day in the life, step by step</h3>
       <ol className="phases">

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Anatomy } from './Anatomy';
+import { AssemblyAnimation } from './AssemblyAnimation';
+import { EPS_TREE, findNode, PowerFlow, SubsystemTree } from './PowerSystem';
 import { HowItWorks, Roadmap, Types } from './chapters';
 import { EXAMPLES, FACTS, FAILURE_FACTS, SUBSYSTEMS } from './learn';
 
@@ -92,7 +94,9 @@ function WhatIsIt() {
 
 function Inside() {
   const [part, setPart] = useState<string>('eps');
+  const [epsNode, setEpsNode] = useState('eps');
   const chosen = SUBSYSTEMS.find((s) => s.id === part) ?? SUBSYSTEMS[1];
+  const node = findNode(EPS_TREE, epsNode) ?? EPS_TREE;
 
   return (
     <div className="chapter">
@@ -126,6 +130,35 @@ function Inside() {
           </div>
         </div>
       </div>
+
+      <h3 className="sub">Build one yourself</h3>
+      <p className="lede">
+        Add the parts one at a time and watch the weight climb. A 3U is allowed
+        6&nbsp;kg, and going over means it does not fly.
+      </p>
+      <AssemblyAnimation />
+
+      <h3 className="sub">Opening up one part: the power system</h3>
+      <p className="lede">
+        Each of those parts is a whole subject of its own. Here is the power system
+        broken down &mdash; click anything in the tree to read about it.
+      </p>
+
+      <div className="deep-dive">
+        <SubsystemTree tree={EPS_TREE} selected={epsNode} onSelect={setEpsNode} />
+        <div className="dd-detail">
+          <h4>{node.label}</h4>
+          <p className="dd-short">{node.short}</p>
+          <p>{node.detail}</p>
+        </div>
+      </div>
+
+      <h3 className="sub">How the electricity actually moves</h3>
+      <p className="lede">
+        Switch between sunlight and shadow. Watch which way the dots travel &mdash;
+        that reversal is the whole problem the power system exists to solve.
+      </p>
+      <PowerFlow />
     </div>
   );
 }

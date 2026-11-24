@@ -52,7 +52,6 @@ export function OrbitAnimation({
   const [stored, setStored] = useState(0);
   const [sent, setSent] = useState(0);
   const raf = useRef<number>(0);
-  const last = useRef<number>(0);
   const reduced = useRef(false);
 
   useEffect(() => {
@@ -64,10 +63,15 @@ export function OrbitAnimation({
 
   useEffect(() => {
     if (!playing) return;
+    // Timing local to this effect: React mounts twice in development, and two
+    // loops sharing one clock ref would each reset it before the other read it.
+    let prev = 0;
+    let cancelled = false;
     const step = (now: number) => {
-      if (!last.current) last.current = now;
-      const dt = Math.min(0.05, (now - last.current) / 1000);
-      last.current = now;
+      if (cancelled) return;
+      if (!prev) prev = now;
+      const dt = Math.min(0.05, (now - prev) / 1000);
+      prev = now;
 
       setT((prev) => {
         const next = (prev + dt / 22) % 1; // one lap every 22 seconds
@@ -93,8 +97,8 @@ export function OrbitAnimation({
     };
     raf.current = requestAnimationFrame(step);
     return () => {
+      cancelled = true;
       cancelAnimationFrame(raf.current);
-      last.current = 0;
     };
   }, [playing]);
 

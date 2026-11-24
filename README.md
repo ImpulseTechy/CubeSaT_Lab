@@ -53,10 +53,13 @@ Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no
 **Start here** — six chapters for a complete beginner, no prior knowledge assumed:
 1. **What is it?** — size, history, and why a standard shape made student satellites possible
 2. **How does it work?** — an animated orbit showing the whole operating loop: charging in
-   sunlight, draining in Earth's shadow, and the few minutes a day it can send data home
+   sunlight, draining in Earth's shadow, and the few minutes a day it can send data home.
+   Plus a release-and-detumble animation showing why a satellite has to stop spinning first
 3. **What types are there?** — five sizes drawn to scale as rotating 3D cubes, plus six kinds
    of mission and what makes each one hard
-4. **What is inside?** — an interactive cutaway; click any part for what it does and how it fails
+4. **What is inside?** — an interactive cutaway; click any part for what it does and how it
+   fails. Build a 3U yourself part by part and watch the weight climb, then open up the power
+   system: a subsystem tree and an animated flow diagram whose direction reverses in shadow
 5. **Why do they fail?** — the real numbers, and the finding that justifies this whole project
 6. **How do I build one?** — an eight-stage roadmap with honest timescales, costs, what goes
    wrong at each stage, and how to tell when you have finished it
