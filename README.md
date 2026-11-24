@@ -72,7 +72,7 @@ Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no
 6. **How do I build one?** — an eight-stage roadmap with honest timescales, costs, what goes
    wrong at each stage, and how to tell when you have finished it
 
-**Design one** — the simulator:
+**Design one** — the simulator (every design is a shareable link):
 - Configure a 1U–6U CubeSat from a parts catalogue; live mass budget against CDS Rev. 14.1
 - Orbit selection with eclipse geometry, beta angle and J2 nodal regression
 - Battery state-of-charge over six orbits with eclipse bands and the brownout floor

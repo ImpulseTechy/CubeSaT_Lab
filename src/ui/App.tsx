@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DEFAULT_DESIGN, EXAMPLE_DESIGNS, type Design } from '../physics/design';
 import { DesignView } from './DesignView';
 import { LearnView } from './LearnView';
+import { designFromUrl, loadLocally, saveLocally, syncUrl } from './share';
 
 type View = 'learn' | 'design';
 
@@ -11,9 +12,32 @@ const TABS: { id: View; label: string; hint: string }[] = [
 ];
 
 export default function App() {
-  const [view, setView] = useState<View>('learn');
-  const [design, setDesign] = useState<Design>(DEFAULT_DESIGN);
+  // A design in the link wins over saved work, and both beat the default.
+  // Arriving via a shared link should always show what was shared.
+  const shared = designFromUrl();
+  const [view, setView] = useState<View>(shared ? 'design' : 'learn');
+  const [design, setDesign] = useState<Design>(shared ?? loadLocally() ?? DEFAULT_DESIGN);
   const [mission, setMission] = useState<string | null>(null);
+
+  // Keep the address bar and local storage in step, so a refresh or a copied
+  // URL never loses what someone worked out.
+  useEffect(() => {
+    saveLocally(design);
+    if (view === 'design') syncUrl(design);
+  }, [design, view]);
+
+  // Pasting a shared link into a tab that is already open changes the hash
+  // without reloading, so without this the link would appear to do nothing.
+  useEffect(() => {
+    const onHash = () => {
+      const d = designFromUrl();
+      if (!d) return;
+      setDesign(d);
+      setView('design');
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   const loadExample = (id: string) => {
     const d = EXAMPLE_DESIGNS[id];

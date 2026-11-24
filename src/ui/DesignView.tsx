@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { bySubsystem, CATALOGUE_SOURCE, byId, type Subsystem } from '../data/catalogue';
 import { FORM_FACTORS, type FormFactor } from '../physics/constants';
 import {
@@ -19,6 +19,7 @@ import {
   GroundTrackChart, Section, SocChart, Stat, Term, VerdictCardView,
 } from './components';
 import { MISSIONS } from './missions';
+import { designLink } from './share';
 
 const SUBSYSTEM_ORDER: Subsystem[] = [
   'structure', 'eps', 'battery', 'solar', 'obc', 'adcs', 'comms', 'payload',
@@ -95,6 +96,24 @@ export function DesignView({
   return (
     <div className="main">
       <aside className="sidebar">
+        {/*
+          On a phone the controls and the cards sit in separate scroll areas,
+          so changing a part scrolls the result out of sight - and the live
+          cascade is the whole point of this screen. This strip stays put
+          while you scroll the controls, so cause and effect stay together.
+        */}
+        <div className="mini-verdict" aria-label="Current verdict">
+          {verdict.cards.map((c) => (
+            <button key={c.id} className={`mv ${c.status}`}
+                    onClick={() => document.querySelector('.verdicts')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+              <span className="mv-t">{c.title.split(' ')[0]}</span>
+              <span className="mv-s">
+                {c.status === 'go' ? 'works' : c.status === 'warn' ? 'risky' : 'fails'}
+              </span>
+            </button>
+          ))}
+        </div>
+
         <div className="group">
           <h2>1 · How big</h2>
           <p className="lede">
@@ -262,6 +281,8 @@ export function DesignView({
             </div>
           </div>
         </div>
+
+        <ShareBox design={design} />
 
         <div className="note">
           <strong>Where the parts come from:</strong> {CATALOGUE_SOURCE}
@@ -446,6 +467,43 @@ export function DesignView({
           </p>
         </div>
       </main>
+    </div>
+  );
+}
+
+/**
+ * Copy a link to whatever is currently on screen.
+ *
+ * The design lives entirely in the URL, so this needs no account and no
+ * server - and it is what lets a teacher send "here is a broken satellite,
+ * work out why" rather than a page of instructions.
+ */
+function ShareBox({ design }: { design: Design }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    const link = designLink(design);
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2200);
+    } catch {
+      // Clipboard access can be refused; select the text so it can be copied
+      // by hand rather than failing silently.
+      window.prompt('Copy this link:', link);
+    }
+  };
+
+  return (
+    <div className="group share-group">
+      <h2>Keep this design</h2>
+      <p className="lede">
+        Everything you have chosen is stored in the web address, so you can
+        bookmark it, send it to someone, or hand it in.
+      </p>
+      <button className="share-btn" onClick={copy}>
+        {copied ? 'Link copied' : 'Copy a link to this satellite'}
+      </button>
     </div>
   );
 }
