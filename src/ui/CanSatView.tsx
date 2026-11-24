@@ -7,13 +7,22 @@
  * it happens to them by accident.
  */
 
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { defaultMission, flyMission, type MissionConfig } from '../cansat/mission';
 import { BATTERIES, COMPONENTS, electronicsMassG, powerBudget } from '../cansat/power';
 import { bitrateBps, rangeInEnvironment, type SpreadingFactor } from '../cansat/radio';
 import { requiredChuteDiameter } from '../cansat/descent';
 import type { Faults } from '../cansat/sensors';
 import { FlightPlayer, FlightReport } from './FlightPlayer';
+import { CANSAT_PARTS } from './cansatParts';
+
+/**
+ * Three.js is only loaded when someone opens this section, so a student
+ * reading the Start here chapters never downloads it.
+ */
+const CanSat3D = lazy(() =>
+  import('./CanSat3D').then((m) => ({ default: m.CanSat3D })),
+);
 
 const FAULT_LABELS: { key: keyof Faults; label: string; hint: string }[] = [
   {
@@ -51,6 +60,8 @@ const LAUNCHES = [
 
 export function CanSatView() {
   const [cfg, setCfg] = useState<MissionConfig>(defaultMission());
+  const [part, setPart] = useState<string>('can');
+  const [chuteOpen, setChuteOpen] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [done, setDone] = useState(false);
   const [runId, setRunId] = useState(0);
@@ -84,6 +95,45 @@ export function CanSatView() {
           and making it costs you nothing but a few seconds.
         </p>
       </div>
+
+      <section className="cs-explore">
+        <div className="cs-3d">
+          <Suspense fallback={<div className="c3-loading">building the model&hellip;</div>}>
+            <CanSat3D selected={part} onSelect={setPart} chuteOpen={chuteOpen} />
+          </Suspense>
+          <div className="cs-3d-actions">
+            <button className={chuteOpen ? 'on' : ''}
+                    onClick={() => setChuteOpen((v) => !v)}>
+              {chuteOpen ? 'Pack the parachute away' : 'Open the parachute'}
+            </button>
+          </div>
+        </div>
+
+        <div className="cs-part">
+          <div className="cs-part-tabs">
+            {CANSAT_PARTS.map((p) => (
+              <button key={p.id} aria-pressed={part === p.id} onClick={() => setPart(p.id)}>
+                <span className="dot" style={{ background: p.colour }} />
+                {p.label}
+              </button>
+            ))}
+          </div>
+          {(() => {
+            const p = CANSAT_PARTS.find((x) => x.id === part) ?? CANSAT_PARTS[0];
+            return (
+              <>
+                <h3>{p.label}</h3>
+                <p className="cs-what">{p.what}</p>
+                <div className="cs-why">
+                  <span className="lbl">Why it matters</span>
+                  {p.why}
+                </div>
+                <div className="cs-cost">Costs {p.cost}</div>
+              </>
+            );
+          })()}
+        </div>
+      </section>
 
       <div className="cs-main">
         <aside className="cs-build">

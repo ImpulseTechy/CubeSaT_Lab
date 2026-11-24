@@ -1253,3 +1253,104 @@ a { color: var(--accent); }
   background: var(--paper-2); color: var(--ink); border: 1px solid var(--rule-strong);
 }
 .handoff button.secondary:hover { background: var(--accent-soft); }
+
+/* =========================================================================
+   The 3D CanSat
+   ========================================================================= */
+
+.cs-explore {
+  display: grid; grid-template-columns: 1fr 340px; gap: 22px;
+  margin-bottom: 30px; align-items: start;
+}
+@media (max-width: 1000px) { .cs-explore { grid-template-columns: 1fr; } }
+
+.cs-3d {
+  background: var(--paper-2); border: 1px solid var(--rule-strong); border-radius: 3px;
+  padding: 10px;
+  background-image:
+    linear-gradient(rgba(28,26,23,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28,26,23,0.045) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+.c3-stage { position: relative; }
+.c3-canvas { width: 100%; height: 420px; cursor: grab; overflow: hidden; }
+/* The canvas is sized entirely by CSS. Three.js only sets its pixel buffer,
+   so it can never drive the layout and start a resize loop. */
+.c3-canvas canvas { display: block; width: 100% !important; height: 100% !important; }
+.c3-canvas:active { cursor: grabbing; }
+.c3-loading {
+  height: 420px; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 12px; color: var(--ink-40);
+}
+
+.c3-label {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: 7px;
+  background: var(--paper-2); border: 1px solid var(--rule-strong);
+  border-radius: 999px; padding: 4px 12px 4px 9px;
+  font-family: var(--sans); font-size: 12px; color: var(--ink);
+  cursor: pointer; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(28,26,23,0.10);
+}
+.c3-label:hover { border-color: var(--accent); }
+.c3-label.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.c3-label .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.c3-controls {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 0; border: 1px solid var(--rule-strong); border-radius: 3px;
+  overflow: hidden; background: var(--paper-2);
+}
+.c3-controls button {
+  background: none; border: none; border-right: 1px solid var(--rule);
+  width: 38px; height: 32px; cursor: pointer; color: var(--ink-60);
+  font-family: var(--mono); font-size: 15px;
+}
+.c3-controls button:last-child { border-right: none; }
+.c3-controls button:hover { background: var(--accent-soft); color: var(--accent); }
+
+.c3-hint {
+  position: absolute; bottom: 14px; right: 12px;
+  font-family: var(--mono); font-size: 10px; color: var(--ink-40);
+}
+
+.cs-3d-actions { margin-top: 10px; display: flex; gap: 8px; }
+.cs-3d-actions button {
+  background: var(--paper-2); border: 1px solid var(--rule-strong); border-radius: 3px;
+  padding: 8px 14px; font-family: var(--sans); font-size: 13px; cursor: pointer; color: var(--ink);
+}
+.cs-3d-actions button.on { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+
+.cs-part {
+  background: var(--paper-2); border: 1px solid var(--rule-strong);
+  border-radius: 3px; padding: 16px 18px;
+}
+.cs-part-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+.cs-part-tabs button {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--paper-2); border: 1px solid var(--rule-strong); border-radius: 3px;
+  padding: 5px 10px; font-family: var(--sans); font-size: 12.5px; color: var(--ink-60);
+  cursor: pointer;
+}
+.cs-part-tabs button[aria-pressed='true'] {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.cs-part-tabs .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+.cs-part h3 {
+  font-family: var(--serif); font-size: 21px; font-weight: 600; color: var(--ink);
+  margin: 0 0 8px; letter-spacing: -0.015em;
+}
+.cs-what { font-size: 14.5px; color: var(--ink-80); margin: 0 0 12px; }
+.cs-why {
+  background: var(--accent-soft); border-radius: 3px; padding: 12px 14px;
+  font-size: 14px; color: var(--ink);
+}
+.cs-why .lbl {
+  display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
+}
+.cs-cost {
+  margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--ink-60);
+}
