@@ -2,6 +2,8 @@
 
 **Learn how satellites work, then build one that survives.**
 
+**Live: https://impulsetechy.github.io/CubeSaT_Lab/**
+
 A free, open-source, zero-install web platform that takes someone who has never heard of a CubeSat
 all the way to designing one — with real physics that shows its working.
 
@@ -45,6 +47,10 @@ first or unique.
 ```bash
 npm install && npm run dev
 ```
+
+Every push to `main` runs the type check and the full test suite, then publishes
+the site. A red build blocks the deploy — which matters here, because the tests
+check the physics against closed-form values and the copy against a jargon list.
 
 Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no accounts.
 
