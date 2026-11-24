@@ -247,3 +247,56 @@ export const STATIONS: GroundStation[] = [
 export function stationById(id: string): GroundStation {
   return STATIONS.find((s) => s.id === id) ?? STATIONS[0];
 }
+
+// ---------------------------------------------------------------------------
+// Worked examples
+//
+// Three designs a beginner can open to see how the trade-offs play out. The
+// first works, the second fails on data (the classic trap), the third shows
+// what deployable panels buy you and what they cost.
+// ---------------------------------------------------------------------------
+
+export const EXAMPLE_DESIGNS: Record<string, Design> = {
+  'ex-beacon': {
+    formFactor: '1U',
+    components: {
+      structure: 'struct-1u', eps: 'eps-basic', battery: 'batt-10',
+      solar: 'solar-body-1u', obc: 'obc-basic', adcs: 'adcs-passive',
+      comms: 'comms-vhf', payload: 'pl-beacon',
+    },
+    attitude: 'tumbling',
+    payloadDuty: 0.1,
+    dataRateBps: 1200,
+    contingency: 0.15,
+    orbit: { altitudeKm: 420, inclinationDeg: 51.6, raanDeg: 0, solarLongitudeDeg: 0 },
+    stationId: 'amateur-eu',
+  },
+  'ex-imager': {
+    formFactor: '3U',
+    components: {
+      structure: 'struct-3u', eps: 'eps-mppt', battery: 'batt-20',
+      solar: 'solar-body-3u', obc: 'obc-basic', adcs: 'adcs-mtq',
+      comms: 'comms-uhf', payload: 'pl-cam-hi',
+    },
+    attitude: 'nadir',
+    payloadDuty: 0.15,
+    dataRateBps: 9600,
+    contingency: 0.1,
+    orbit: { altitudeKm: 525, inclinationDeg: 97.5, raanDeg: 0, solarLongitudeDeg: 0 },
+    stationId: 'university',
+  },
+  'ex-science': {
+    formFactor: '6U',
+    components: {
+      structure: 'struct-6u', eps: 'eps-mppt', battery: 'batt-80',
+      solar: 'solar-deploy-6u', obc: 'obc-linux', adcs: 'adcs-wheels',
+      comms: 'comms-x', payload: 'pl-sar',
+    },
+    attitude: 'sun-tracking',
+    payloadDuty: 0.15,
+    dataRateBps: 10e6,
+    contingency: 0.15,
+    orbit: { altitudeKm: 525, inclinationDeg: 97.5, raanDeg: 90, solarLongitudeDeg: 0 },
+    stationId: 'svalbard',
+  },
+};

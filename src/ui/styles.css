@@ -361,3 +361,181 @@ tr.sub td { color: var(--ink-60); }
 .note { font-size: 12.5px; color: var(--ink-60); margin-top: 10px; }
 .note strong { color: var(--ink-80); }
 a { color: var(--accent); }
+
+/* =========================================================================
+   Masthead navigation
+   ========================================================================= */
+
+.masthead .brand { display: flex; flex-direction: column; gap: 1px; }
+.masthead .brand h1 { line-height: 1.1; }
+
+.tabs { display: flex; gap: 0; margin-left: 26px; border: 1px solid var(--rule-strong);
+        border-radius: 3px; overflow: hidden; align-self: center; }
+.tabs button {
+  background: var(--paper-2); border: none; border-right: 1px solid var(--rule);
+  padding: 7px 16px; font-family: var(--sans); font-size: 13.5px;
+  color: var(--ink-60); cursor: pointer;
+}
+.tabs button:last-child { border-right: none; }
+.tabs button[aria-pressed='true'] { background: var(--accent); color: #fff; font-weight: 500; }
+.tabs button:hover:not([aria-pressed='true']) { background: var(--accent-soft); color: var(--ink); }
+
+/* =========================================================================
+   Learn
+   ========================================================================= */
+
+.learn-scroll { overflow-y: auto; flex: 1; }
+.learn { max-width: 1020px; margin: 0 auto; padding: 36px 32px 20px; }
+
+.learn .hero { margin-bottom: 46px; }
+.learn h2 {
+  font-family: var(--serif); font-size: 30px; font-weight: 600; color: var(--ink);
+  margin: 0 0 12px; letter-spacing: -0.02em; line-height: 1.18;
+}
+.learn .big {
+  font-family: var(--serif); font-size: 20px; line-height: 1.52; color: var(--ink);
+  max-width: 62ch; margin: 0 0 16px;
+}
+.learn p { max-width: 68ch; margin: 0 0 14px; font-size: 15.5px; }
+.learn .lede { color: var(--ink-60); max-width: 68ch; margin-bottom: 22px; }
+.learn .attrib { font-size: 12.5px; color: var(--ink-40); font-style: italic; margin-top: 16px; }
+
+.learn-section {
+  margin-bottom: 46px; padding-top: 34px; border-top: 1px solid var(--rule-strong);
+}
+
+/* Facts strip */
+.facts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+  border-radius: 3px; overflow: hidden; margin-top: 26px;
+}
+.fact { background: var(--paper-2); padding: 13px 15px; }
+.fact .n {
+  display: block; font-family: var(--mono); font-size: 20px; color: var(--accent);
+  font-weight: 500; margin-bottom: 3px;
+}
+.fact .d { font-size: 12.5px; color: var(--ink-60); line-height: 1.45; }
+
+/* Anatomy */
+.anatomy-layout { display: grid; grid-template-columns: 330px 1fr; gap: 30px; align-items: start; }
+@media (max-width: 880px) { .anatomy-layout { grid-template-columns: 1fr; } }
+
+.anatomy-wrap {
+  background: var(--paper-2); border: 1px solid var(--rule-strong);
+  border-radius: 3px; padding: 12px;
+}
+.anatomy { width: 100%; height: auto; display: block; }
+
+.part-detail h3 {
+  font-family: var(--serif); font-size: 23px; font-weight: 600; color: var(--ink);
+  margin: 4px 0 6px; letter-spacing: -0.015em;
+}
+.part-detail .one-liner { font-size: 17px; color: var(--ink); margin-bottom: 8px; }
+.part-detail .like { color: var(--ink-60); font-family: var(--serif); font-style: italic; }
+.part-detail .like strong { font-style: normal; color: var(--ink); font-weight: 600; }
+
+.part-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+.part-tabs button {
+  background: var(--paper-2); border: 1px solid var(--rule-strong); border-radius: 3px;
+  padding: 5px 11px; font-family: var(--sans); font-size: 12.5px; color: var(--ink-60);
+  cursor: pointer;
+}
+.part-tabs button[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.part-tabs button:hover:not([aria-pressed='true']) { background: var(--accent-soft); color: var(--ink); }
+
+.fail-box {
+  margin-top: 16px; padding: 13px 15px; background: var(--nogo-bg);
+  border-left: 3px solid var(--nogo); border-radius: 3px; font-size: 14.5px; color: var(--ink);
+}
+.fail-box .lbl {
+  display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--nogo); margin-bottom: 5px;
+}
+.fail-box .share {
+  display: block; margin-top: 8px; font-family: var(--mono); font-size: 11.5px; color: var(--nogo);
+}
+
+/* Failure numbers */
+.failure-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px; margin: 24px 0;
+}
+.fnum {
+  background: var(--paper-2); border: 1px solid var(--rule-strong);
+  border-top: 3px solid var(--nogo); border-radius: 3px; padding: 16px 17px;
+}
+.fnum .n {
+  display: block; font-family: var(--serif); font-size: 34px; font-weight: 600;
+  color: var(--nogo); line-height: 1; margin-bottom: 7px;
+}
+.fnum .d { font-size: 13.5px; color: var(--ink-80); }
+
+/* Examples */
+.examples { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 16px; }
+.example {
+  background: var(--paper-2); border: 1px solid var(--rule-strong);
+  border-radius: 3px; padding: 16px 17px; display: flex; flex-direction: column;
+}
+.example .size {
+  font-family: var(--mono); font-size: 11px; color: var(--accent);
+  background: var(--accent-soft); padding: 2px 8px; border-radius: 2px; align-self: flex-start;
+}
+.example h4 {
+  font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--ink);
+  margin: 9px 0 7px; letter-spacing: -0.012em;
+}
+.example p { font-size: 14px; margin-bottom: 10px; max-width: none; }
+.example .lesson {
+  font-family: var(--serif); font-style: italic; color: var(--ink-60);
+  border-top: 1px solid var(--rule); padding-top: 10px; flex: 1;
+}
+.example button {
+  background: var(--accent); color: #fff; border: none; border-radius: 3px;
+  padding: 8px 14px; font-family: var(--sans); font-size: 13.5px; font-weight: 500;
+  cursor: pointer; align-self: flex-start; margin-top: 4px;
+}
+.example button:hover { background: #1f3c72; }
+
+/* Steps */
+.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+.steps li { display: grid; grid-template-columns: 42px 1fr; gap: 16px; margin-bottom: 24px; }
+.steps .num {
+  font-family: var(--mono); font-size: 15px; color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 50%;
+  width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+}
+.steps h4 {
+  font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--ink);
+  margin: 4px 0 6px; letter-spacing: -0.012em;
+}
+.steps h4 .time {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-40);
+  margin-left: 10px; letter-spacing: 0.03em; font-weight: 400;
+}
+.steps p { margin: 0; font-size: 14.5px; }
+
+.where-next {
+  margin-top: 10px; padding: 15px 17px; background: var(--accent-soft);
+  border-radius: 3px; font-size: 14.5px; color: var(--ink); max-width: 68ch;
+}
+.where-next strong { color: var(--accent); }
+
+.handoff {
+  max-width: 1020px; margin: 0 auto; padding: 32px; border-top: 1px solid var(--rule-strong);
+  display: flex; align-items: center; gap: 26px; flex-wrap: wrap;
+}
+.handoff p { margin: 0; flex: 1; min-width: 300px; font-size: 15.5px; color: var(--ink-80); }
+.handoff button {
+  background: var(--accent); color: #fff; border: none; border-radius: 3px;
+  padding: 11px 22px; font-family: var(--sans); font-size: 15px; font-weight: 500; cursor: pointer;
+}
+.handoff button:hover { background: #1f3c72; }
+
+@media (max-width: 760px) {
+  .masthead { gap: 10px; }
+  .tabs { margin-left: 0; }
+  .learn { padding: 24px 18px 16px; }
+  .learn h2 { font-size: 25px; }
+  .learn .big { font-size: 18px; }
+}

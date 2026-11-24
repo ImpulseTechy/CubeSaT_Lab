@@ -1,7 +1,13 @@
-# CubeSat Simulation Platform
+# CubeSat Lab
 
-A free, open-source, zero-install web platform for learning CubeSat engineering by building and
-flying one — with real physics that shows its working.
+**Learn how satellites work, then build one that survives.**
+
+A free, open-source, zero-install web platform that takes someone who has never heard of a CubeSat
+all the way to designing one — with real physics that shows its working.
+
+It opens on **Start here**: what a CubeSat is, a clickable cutaway of what is inside one, why real
+student satellites fail, three worked examples, and the actual path from curiosity to orbit. Only
+then does it offer **Design one**.
 
 Owning or prototyping a CubeSat costs money and equipment most students don't have. The existing
 options are mostly either toy games with no real physics, or professional tools (GMAT, 42, Basilisk,
@@ -44,6 +50,14 @@ Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no
 
 ### What works today
 
+**Start here** — a complete beginner's on-ramp:
+- What a CubeSat is, in plain language, with scale and history
+- An interactive cutaway: click any part to learn what it does and what happens when it fails
+- Why satellites really fail (40%+ of first university CubeSats, ~half from integration)
+- Three worked example designs that load straight into the simulator
+- A six-step guide from CanSat to launch programme
+
+**Design one** — the simulator:
 - Configure a 1U–6U CubeSat from a parts catalogue; live mass budget against CDS Rev. 14.1
 - Orbit selection with eclipse geometry, beta angle and J2 nodal regression
 - Battery state-of-charge over six orbits with eclipse bands and the brownout floor
