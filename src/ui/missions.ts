@@ -29,15 +29,17 @@ const base = (patch: Partial<Design>): Design => ({ ...DEFAULT_DESIGN, ...patch 
 export const MISSIONS: Mission[] = [
   {
     id: 'first-orbit',
-    title: '1. First Orbit',
-    misconception: '"A higher orbit means flying faster."',
+    title: '1. Does a higher satellite fly faster?',
+    misconception: '"Higher up must mean faster."',
     brief:
-      'Pick an orbit and watch what changes. Altitude sets your period, your ' +
-      'speed, how long you spend in eclipse, and how often you see a ground station.',
+      'Everything about a satellite starts with the orbit you put it in. How high ' +
+      'you fly decides how fast you travel, how long each lap takes, how much time ' +
+      'you spend in darkness, and how often you can talk to it.',
     predict:
-      'Before you touch anything: if you raise the altitude from 400 km to 1200 km, ' +
-      'does the satellite travel faster or slower? Write your answer down, then change it.',
-    goal: 'Set an orbit above 1000 km and compare the velocity with 400 km.',
+      'Before you touch anything \u2014 if you move the satellite from 400 km up to ' +
+      '1200 km, does it end up travelling faster or slower? Say your answer out loud, ' +
+      'then drag the height slider and watch "how fast it travels".',
+    goal: 'Drag the height above 1000 km, then look at how fast it travels.',
     setup: base({
       orbit: { altitudeKm: 400, inclinationDeg: 51.6, raanDeg: 0, solarLongitudeDeg: 0 },
       components: { ...DEFAULT_DESIGN.components, payload: 'pl-beacon' },
@@ -47,16 +49,18 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'keep-lights-on',
-    title: '2. Keep the Lights On',
-    misconception: '"Solar panels just work — the Sun is always there."',
+    title: '2. Can you keep it alive?',
+    misconception: '"Solar panels just work \u2014 the Sun is always there."',
     brief:
-      'This 3U carries a camera and a healthy battery. Push the payload duty ' +
-      'cycle up and find where the power budget breaks, then fix it without ' +
-      'breaking the mass budget.',
+      'This satellite carries a good camera and a healthy battery. The catch is that ' +
+      'it spends about a third of every lap inside Earth\u2019s shadow, making no ' +
+      'electricity at all. Turn the camera up until the battery cannot keep up \u2014 ' +
+      'then find a way to fix it.',
     predict:
-      'What fraction of each orbit can you run the camera before the battery ' +
-      'cannot recover? Guess a percentage, then drag the slider past it.',
-    goal: 'Run the payload at 40% duty or more with the Power card reading GO.',
+      'What share of each lap do you think you can run the camera before the battery ' +
+      'never fully recharges? Pick a number, then drag the slider past it and see how ' +
+      'close you were.',
+    goal: 'Run the camera at least 40% of each lap with the Power card still saying WORKS.',
     setup: base({
       components: { ...DEFAULT_DESIGN.components, payload: 'pl-cam-hi', solar: 'solar-body-3u' },
       payloadDuty: 0.2,
@@ -69,16 +73,17 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'phone-home',
-    title: '3. Phone Home',
-    misconception: '"If the satellite is overhead, my data downloads."',
+    title: '3. Can you actually get the pictures?',
+    misconception: '"If it is flying overhead, my data comes down."',
     brief:
-      'Your camera works and your power closes. Now get the pictures home. ' +
-      'Visibility is not the same as link closure, and link closure is not the ' +
-      'same as enough bandwidth.',
+      'The camera works and the power is fine. Now the hard part: getting the pictures ' +
+      'down to Earth. Being overhead is not the same as being heard, and being heard ' +
+      'is not the same as having enough time to send everything.',
     predict:
-      'Your camera makes about 180 MB a day. How much do you think an amateur ' +
-      'UHF station at 9.6 kbps brings down in a day? Guess, then look.',
-    goal: 'Get the Data card to GO without the Power or Mass cards failing.',
+      'Your camera records about 180 MB a day \u2014 roughly 40 photos. How much of ' +
+      'that do you think a small hobby radio antenna actually gets down in a day? ' +
+      'Guess a number first. Most people guess far too high.',
+    goal: 'Get the Data card to say WORKS, without breaking Weight or Power.',
     setup: base({
       components: { ...DEFAULT_DESIGN.components, payload: 'pl-cam-lo' },
       dataRateBps: 9600,

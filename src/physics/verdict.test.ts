@@ -87,24 +87,27 @@ describe('POWER cascade - the headline demo', () => {
     // A slow drain is still a failure, and must still say so with a timeline.
     const slow = evaluate(d({ payloadDuty: 0.9 }));
     expect(slow.cards[1].status).toBe('nogo');
-    expect(slow.cards[1].diagnosis).toMatch(/about \d+ orbits/);
+    expect(slow.cards[1].diagnosis).toMatch(/about \d+ laps/);
   });
 
   it('the brownout diagnosis names the orbit, the draw and the generation', () => {
     const v = evaluate(d({ payloadDuty: 0.9, components: { ...DEFAULT_DESIGN.components, payload: 'pl-cam-hi' } }));
     const power = v.cards.find((c) => c.id === 'power')!;
     expect(power.status).toBe('nogo');
-    expect(power.diagnosis).toMatch(/orbit \d+/);
-    expect(power.diagnosis).toMatch(/W orbit-average/);
-    expect(power.diagnosis).toMatch(/eclipse/);
+    expect(power.diagnosis).toMatch(/\d+ laps?/);
+    expect(power.diagnosis).toMatch(/watts/);
+    expect(power.diagnosis).toMatch(/shadow/);
+    // The engineering version stays available for anyone who wants it.
+    expect(power.technical).toMatch(/Wh\/orbit|orbit-average/);
   });
 
   it('the fix names the cross-subsystem mass cost of deployables', () => {
     const v = evaluate(d({ payloadDuty: 0.8 }));
     const power = v.cards.find((c) => c.id === 'power')!;
     expect(power.fix).toBeTruthy();
-    expect(power.fix!).toMatch(/duty cycle/i);
-    expect(power.fix!).toMatch(/mass margin|g\)/);
+    expect(power.fix!).toMatch(/less often/i);
+    expect(power.fix!).toMatch(/spare weight/i);
+    expect(power.fix!).toMatch(/\d+ g/);
   });
 
   it('deployable wings rescue a design that body-mounted cells cannot run', () => {
@@ -142,7 +145,7 @@ describe('DATA cascade - the question nobody else answers', () => {
   it('the diagnosis quantifies how much data is lost per day', () => {
     const v = evaluate(d({ components: { ...DEFAULT_DESIGN.components, payload: 'pl-cam-hi' } }));
     const data = v.cards.find((c) => c.id === 'data')!;
-    expect(data.diagnosis).toMatch(/MB a day is lost|buffer fills/);
+    expect(data.diagnosis).toMatch(/is lost/);
     expect(data.fix).toMatch(/kbps/);
   });
 
@@ -173,8 +176,9 @@ describe('DATA cascade - the question nobody else answers', () => {
     );
     const data = v.cards.find((c) => c.id === 'data')!;
     expect(v.passes.passesPerDay.value).toBe(0);
-    expect(data.headline).toMatch(/No passes/);
-    expect(data.fix).toMatch(/inclination/i);
+    expect(data.headline).toMatch(/never flies over/i);
+    expect(data.fix).toMatch(/tilt the orbit/i);
+    expect(data.technical).toMatch(/inclination/i);
   });
 
   it('pushing the rate too high breaks the link before the buffer', () => {

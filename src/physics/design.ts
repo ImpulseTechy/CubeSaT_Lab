@@ -223,23 +223,23 @@ export function payloadDataPerOrbitMb(d: Design): Traced<number> {
 
 export const STATIONS: GroundStation[] = [
   {
-    id: 'amateur-eu', name: 'Amateur station (Europe, 52N)',
+    id: 'amateur-eu', name: 'Hobby antenna in Europe',
     latDeg: 52, lonDeg: 0, altitudeM: 50, gOverTDbK: -12, minElevationDeg: 10,
   },
   {
-    id: 'amateur-in', name: 'Amateur station (India, 19N)',
+    id: 'amateur-in', name: 'Hobby antenna in India',
     latDeg: 19.1, lonDeg: 72.9, altitudeM: 14, gOverTDbK: -12, minElevationDeg: 10,
   },
   {
-    id: 'university', name: 'University dish (3 m, 52N)',
+    id: 'university', name: 'University dish, 3 m, Europe',
     latDeg: 52, lonDeg: 0, altitudeM: 50, gOverTDbK: 8, minElevationDeg: 10,
   },
   {
-    id: 'svalbard', name: 'Polar station (Svalbard, 78N)',
+    id: 'svalbard', name: 'Professional station near the North Pole',
     latDeg: 78.2, lonDeg: 15.4, altitudeM: 450, gOverTDbK: 18, minElevationDeg: 5,
   },
   {
-    id: 'equatorial', name: 'Equatorial station (0N)',
+    id: 'equatorial', name: 'Station on the equator',
     latDeg: 0, lonDeg: 0, altitudeM: 10, gOverTDbK: 2, minElevationDeg: 10,
   },
 ];

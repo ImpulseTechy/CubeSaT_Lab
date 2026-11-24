@@ -1,33 +1,84 @@
-/**
- * Shared presentational pieces: traced stats, charts, verdict cards.
- */
-
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { formatNumber, type Traced } from '../physics/trace';
 import type { VerdictCard as Card } from '../physics/verdict';
 import type { SocSample } from '../physics/power';
+import { GLOSSARY } from './glossary';
 
 // ---------------------------------------------------------------------------
-// A number you can click to see its derivation. The whole point of the engine
-// returning traces is that this component needs no per-value special casing.
+// A word you can click to find out what it means.
+// Jargon is never hidden - it is taught.
 // ---------------------------------------------------------------------------
 
-export function Stat({ t, label }: { t: Traced<number>; label?: string }) {
+export function Term({
+  k,
+  children,
+}: {
+  k: keyof typeof GLOSSARY;
+  children?: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const t = GLOSSARY[k];
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+
+  return (
+    <span ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        className="term"
+        aria-expanded={open}
+        onClick={(e) => { e.preventDefault(); setOpen((o) => !o); }}
+      >
+        {children ?? t.plain}
+      </button>
+      {open && (
+        <span className="term-pop" role="dialog">
+          <span className="jargon">engineers call this: {t.technical}</span>
+          {t.definition}
+          {t.matters && <span className="matters">{t.matters}</span>}
+          {t.analogy && <span className="analogy">{t.analogy}</span>}
+        </span>
+      )}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// A number you can click to see exactly where it came from.
+// ---------------------------------------------------------------------------
+
+export function Stat({
+  t,
+  label,
+  term,
+}: {
+  t: Traced<number>;
+  label?: string;
+  term?: keyof typeof GLOSSARY;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <div>
-      <button
-        className="stat"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-      >
+    <div className="stat-wrap">
+      <button className="stat" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <span className="k">{label ?? t.trace.label}</span>
         <span className="v">
           {formatNumber(t.value)}
           <span className="u">{t.unit}</span>
         </span>
-        <span className="hint">{open ? 'hide working' : 'show working'}</span>
+        <span className="hint">{open ? '− hide the maths' : '+ show the maths'}</span>
       </button>
+      {term && (
+        <div style={{ padding: '0 12px 9px', fontSize: 12.5 }}>
+          <Term k={term} />
+        </div>
+      )}
       {open && <TraceView t={t} />}
     </div>
   );
@@ -40,13 +91,13 @@ export function TraceView({ t }: { t: Traced<number> }) {
       {t.trace.substitutions.map((s, i) => (
         <span className="sub" key={i}>
           <span className="sym">{s.symbol}</span> = {formatNumber(s.value)} {s.unit}
-          {s.note ? <span className="note">   ({s.note})</span> : null}
+          {s.note ? <span className="note">  — {s.note}</span> : null}
         </span>
       ))}
       {t.trace.assumptions?.map((a, i) => (
-        <span className="assume" key={i}>assumes: {a}</span>
+        <span className="assume" key={i}>this assumes: {a}</span>
       ))}
-      {t.trace.source && <span className="src">source: {t.trace.source}</span>}
+      {t.trace.source && <span className="src">method: {t.trace.source}</span>}
     </div>
   );
 }
@@ -55,9 +106,10 @@ export function TraceView({ t }: { t: Traced<number> }) {
 // Verdict card
 // ---------------------------------------------------------------------------
 
-const STATUS_LABEL = { go: 'GO', warn: 'WARN', nogo: 'NO-GO' } as const;
+const STATUS_LABEL = { go: 'WORKS', warn: 'RISKY', nogo: 'FAILS' } as const;
 
 export function VerdictCardView({ card }: { card: Card }) {
+  const [tech, setTech] = useState(false);
   return (
     <div className={`card ${card.status}`}>
       <div className="head">
@@ -68,16 +120,24 @@ export function VerdictCardView({ card }: { card: Card }) {
       <div className="diag">{card.diagnosis}</div>
       {card.fix && (
         <div className="fix">
-          <strong>Fix: </strong>
+          <span className="lbl">How to fix it</span>
           {card.fix}
         </div>
+      )}
+      {card.technical && (
+        <>
+          <button className="tech-toggle" onClick={() => setTech((v) => !v)}>
+            {tech ? 'hide the engineering version' : 'say that in engineering terms'}
+          </button>
+          {tech && <div className="tech">{card.technical}</div>}
+        </>
       )}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Charts - small inline SVG, no library needed at this size
+// Charts
 // ---------------------------------------------------------------------------
 
 export function SocChart({
@@ -87,7 +147,7 @@ export function SocChart({
   samples: SocSample[];
   orbitSeconds: number;
 }) {
-  const W = 600, H = 170, padL = 34, padB = 20, padT = 10, padR = 8;
+  const W = 620, H = 182, padL = 40, padB = 26, padT = 12, padR = 10;
   if (!samples.length) return null;
 
   const tMax = samples[samples.length - 1].t;
@@ -98,7 +158,6 @@ export function SocChart({
     .map((s, i) => `${i === 0 ? 'M' : 'L'}${x(s.t).toFixed(1)},${y(s.soc).toFixed(1)}`)
     .join('');
 
-  // Shade eclipse spans so the cause of each dip is visible.
   const spans: { a: number; b: number }[] = [];
   let start: number | null = null;
   for (const s of samples) {
@@ -107,36 +166,45 @@ export function SocChart({
   }
   if (start !== null) spans.push({ a: start, b: tMax });
 
+  const laps = Math.round(tMax / orbitSeconds);
+
   return (
     <>
       <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img"
-           aria-label="Battery state of charge over successive orbits">
+           aria-label="How full the battery is over successive laps around Earth">
         {spans.map((s, i) => (
           <rect key={i} x={x(s.a)} y={padT} width={Math.max(0, x(s.b) - x(s.a))}
-                height={H - padT - padB} fill="#1b2433" />
+                height={H - padT - padB} fill="#efece4" />
         ))}
-        {[0, 0.25, 0.5, 0.75, 1].map((g) => (
-          <g key={g}>
-            <line x1={padL} x2={W - padR} y1={y(g)} y2={y(g)} stroke="#243040" strokeWidth="1" />
-            <text x={padL - 6} y={y(g) + 3} fill="#5d6f87" fontSize="9" textAnchor="end">
-              {(g * 100).toFixed(0)}%
+        {[0, 0.5, 1].map((gv) => (
+          <g key={gv}>
+            <line x1={padL} x2={W - padR} y1={y(gv)} y2={y(gv)}
+                  stroke="rgba(28,26,23,0.14)" strokeWidth="1" />
+            <text x={padL - 7} y={y(gv) + 3.5} fill="rgba(28,26,23,0.42)"
+                  fontSize="10" textAnchor="end" fontFamily="IBM Plex Mono, monospace">
+              {(gv * 100).toFixed(0)}%
             </text>
           </g>
         ))}
         <line x1={padL} x2={W - padR} y1={y(0.2)} y2={y(0.2)}
-              stroke="#ef4e67" strokeWidth="1" strokeDasharray="4 3" />
-        <text x={W - padR} y={y(0.2) - 4} fill="#ef4e67" fontSize="9" textAnchor="end">
-          brownout floor
+              stroke="#9e2b36" strokeWidth="1" strokeDasharray="3 3" />
+        <text x={W - padR} y={y(0.2) - 5} fill="#9e2b36" fontSize="10" textAnchor="end"
+              fontFamily="IBM Plex Mono, monospace">
+          satellite dies below here
         </text>
-        <path d={path} fill="none" stroke="#4d9fff" strokeWidth="1.8" />
-        {Array.from({ length: Math.ceil(tMax / orbitSeconds) + 1 }, (_, i) => i).map((i) => (
-          <text key={i} x={x(i * orbitSeconds)} y={H - 6} fill="#5d6f87"
-                fontSize="9" textAnchor="middle">{i}</text>
+        <path d={path} fill="none" stroke="#2a4d8f" strokeWidth="1.8" />
+        {Array.from({ length: laps + 1 }, (_, i) => i).map((i) => (
+          <text key={i} x={x(i * orbitSeconds)} y={H - 9} fill="rgba(28,26,23,0.42)"
+                fontSize="10" textAnchor="middle" fontFamily="IBM Plex Mono, monospace">{i}</text>
         ))}
+        <text x={(W + padL) / 2} y={H - 0} fill="rgba(28,26,23,0.42)" fontSize="10"
+              textAnchor="middle">laps around Earth</text>
       </svg>
       <div className="chart-cap">
-        Orbit number along the bottom. Shaded bands are eclipse. The dashed line is
-        the 20% brownout floor.
+        The blue line is how full the battery is. Shaded stripes are the minutes
+        spent in Earth&rsquo;s shadow, where the solar panels make nothing — that is
+        why the line dips. If it ever touches the red line, the satellite shuts down
+        for good.
       </div>
     </>
   );
@@ -149,11 +217,10 @@ export function GroundTrackChart({
   points: { latDeg: number; lonDeg: number; inView: boolean }[];
   station: { latDeg: number; lonDeg: number; name: string };
 }) {
-  const W = 600, H = 300;
+  const W = 620, H = 300;
   const x = (lon: number) => ((lon + 180) / 360) * W;
   const y = (lat: number) => ((90 - lat) / 180) * H;
 
-  // Break the polyline where it wraps the antimeridian.
   const segs: string[] = [];
   let cur: string[] = [];
   let prevLon: number | null = null;
@@ -165,47 +232,59 @@ export function GroundTrackChart({
     prevLon = p.lonDeg;
   }
   if (cur.length) segs.push(cur.join(''));
-
   const visible = points.filter((p) => p.inView);
 
   return (
     <>
       <svg className="chart" style={{ height: 300 }} viewBox={`0 0 ${W} ${H}`} role="img"
-           aria-label="Ground track over 24 hours with ground-station passes marked">
-        <rect x="0" y="0" width={W} height={H} fill="#0a0e14" />
-        {[-60, -30, 0, 30, 60].map((lat) => (
-          <g key={lat}>
-            <line x1="0" x2={W} y1={y(lat)} y2={y(lat)}
-                  stroke={lat === 0 ? '#2e3d52' : '#1b2433'} strokeWidth="1" />
-            <text x="3" y={y(lat) - 3} fill="#5d6f87" fontSize="9">{lat}°</text>
-          </g>
+           aria-label="The path the satellite traces over Earth in one day, with times it can talk to the antenna marked">
+        <rect x="0" y="0" width={W} height={H} fill="#efece4" />
+        {[-60, -30, 30, 60].map((lat) => (
+          <line key={lat} x1="0" x2={W} y1={y(lat)} y2={y(lat)}
+                stroke="rgba(28,26,23,0.10)" strokeWidth="1" />
         ))}
+        <line x1="0" x2={W} y1={y(0)} y2={y(0)} stroke="rgba(28,26,23,0.28)" strokeWidth="1" />
+        <text x="5" y={y(0) - 5} fill="rgba(28,26,23,0.42)" fontSize="10"
+              fontFamily="IBM Plex Mono, monospace">equator</text>
         {[-120, -60, 0, 60, 120].map((lon) => (
-          <line key={lon} x1={x(lon)} x2={x(lon)} y1="0" y2={H} stroke="#1b2433" strokeWidth="1" />
+          <line key={lon} x1={x(lon)} x2={x(lon)} y1="0" y2={H}
+                stroke="rgba(28,26,23,0.10)" strokeWidth="1" />
         ))}
         {segs.map((d, i) => (
-          <path key={i} d={d} fill="none" stroke="#4d9fff" strokeWidth="1" opacity="0.55" />
+          <path key={i} d={d} fill="none" stroke="#2a4d8f" strokeWidth="0.9" opacity="0.4" />
         ))}
         {visible.map((p, i) => (
-          <circle key={i} cx={x(p.lonDeg)} cy={y(p.latDeg)} r="1.6" fill="#35c08a" />
+          <circle key={i} cx={x(p.lonDeg)} cy={y(p.latDeg)} r="2" fill="#1f6f4a" />
         ))}
-        <circle cx={x(station.lonDeg)} cy={y(station.latDeg)} r="4"
-                fill="none" stroke="#e8a53d" strokeWidth="1.8" />
-        <text x={x(station.lonDeg) + 7} y={y(station.latDeg) + 3}
-              fill="#e8a53d" fontSize="10">{station.name.split('(')[0].trim()}</text>
+        <circle cx={x(station.lonDeg)} cy={y(station.latDeg)} r="5"
+                fill="none" stroke="#8a5a12" strokeWidth="1.8" />
+        <text x={x(station.lonDeg) + 9} y={y(station.latDeg) + 3.5}
+              fill="#8a5a12" fontSize="11" fontFamily="IBM Plex Sans, sans-serif">
+          your antenna
+        </text>
       </svg>
       <div className="chart-cap">
-        24 hours of ground track. Green marks where the satellite is above the
-        station's elevation mask — those are your passes.
+        One day of flying, drawn on a flat map of Earth. Each blue line is one lap.
+        They shift left because Earth keeps turning underneath. Green dots are the only
+        moments the satellite is high enough above your antenna to talk to it.
       </div>
     </>
   );
 }
 
-export function Panel({ title, children }: { title: string; children: ReactNode }) {
+export function Section({
+  title,
+  lede,
+  children,
+}: {
+  title: string;
+  lede?: string;
+  children: ReactNode;
+}) {
   return (
-    <section className="panel">
+    <section className="section">
       <h3>{title}</h3>
+      {lede && <p className="lede">{lede}</p>}
       {children}
     </section>
   );

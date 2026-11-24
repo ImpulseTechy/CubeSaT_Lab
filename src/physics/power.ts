@@ -47,24 +47,24 @@ export interface AttitudeAssumption {
 export const ATTITUDE_ASSUMPTIONS: Record<AttitudeMode, AttitudeAssumption> = {
   tumbling: {
     mode: 'tumbling',
-    label: 'Tumbling (uncontrolled)',
+    label: 'Tumbling \u2014 spinning out of control',
     incidenceFactor: 0.25,
     rationale:
-      'Averaged over all orientations a convex body intercepts a quarter of its surface area. This is what you get before detumbling succeeds.',
+      'Straight after release the satellite tumbles end over end, so sunlight only catches each panel part of the time. This is what you get until you take control \u2014 and some satellites never do.',
   },
   nadir: {
     mode: 'nadir',
-    label: 'Nadir-pointing',
+    label: 'Facing Earth',
     incidenceFactor: 0.32,
     rationale:
-      'One face holds toward Earth, so the Sun sweeps across the body each orbit. Roughly 1/pi of peak for a flat plate, slightly better with multiple lit faces.',
+      'One side stays aimed at the ground \u2014 what a camera needs. The Sun sweeps across the other faces as it goes round, so the panels catch it at an angle most of the time.',
   },
   'sun-tracking': {
     mode: 'sun-tracking',
-    label: 'Sun-tracking wings',
+    label: 'Panels turned to the Sun',
     incidenceFactor: 0.8,
     rationale:
-      'Steered or favourably deployed panels hold near-normal incidence. Derated from 1.0 for pointing error, off-axis loss and partial shadowing.',
+      'The panels are held facing the Sun, catching almost all the light available. The best case for power \u2014 but it needs a pointing system that can actually do it.',
   },
 };
 

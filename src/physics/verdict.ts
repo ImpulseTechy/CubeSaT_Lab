@@ -49,6 +49,11 @@ export interface VerdictCard {
   diagnosis: string;
   /** What to do about it, naming the cross-subsystem cost. */
   fix: string | null;
+  /**
+   * The same finding in engineering language, for a learner who wants the real
+   * vocabulary. Shown behind a toggle, never instead of the plain version.
+   */
+  technical?: string;
 }
 
 export interface MissionVerdict {
@@ -63,6 +68,21 @@ export interface MissionVerdict {
 }
 
 const g = (n: number) => `${Math.round(n).toLocaleString()} g`;
+
+/** Plain-language names for subsystems, for use inside sentences. */
+const SUBSYSTEM_PLAIN: Record<string, string> = {
+  structure: 'frame',
+  eps: 'power board',
+  battery: 'battery',
+  solar: 'solar panel',
+  obc: 'computer',
+  adcs: 'pointing system',
+  comms: 'radio',
+  payload: 'instrument',
+};
+
+/** Round to something a person would actually say out loud. */
+const say = (n: number, unit: string) => `${formatNumber(n)} ${unit}`;
 
 function worst(statuses: Status[]): Status {
   if (statuses.includes('nogo')) return 'nogo';
@@ -81,38 +101,51 @@ function massCard(d: Design, mass: MassBudget): VerdictCard {
 
   if (margin < 0) {
     return {
-      id: 'mass', title: 'Mass', status: 'nogo',
-      headline: `${g(-margin)} over the ${d.formFactor} limit`,
+      id: 'mass', title: 'Weight', status: 'nogo',
+      headline: `${g(-margin)} too heavy`,
       diagnosis:
-        `Your ${d.formFactor} totals ${g(mass.totalMassG.value)} including ` +
-        `${(d.contingency * 100).toFixed(0)}% contingency, against a ${mass.limitKg} kg ` +
-        `CDS limit. The heaviest item is the ${heaviest.name} at ${g(heaviest.massG)}.`,
+        `Your satellite weighs ${g(mass.totalMassG.value)}, but a ${d.formFactor} is only ` +
+        `allowed to weigh ${mass.limitKg} kg. It will not be accepted for launch. ` +
+        `The heaviest single part is the ${heaviest.name} at ${g(heaviest.massG)}.`,
       fix:
-        `Drop to a lighter ${heaviest.subsystem}, or move up a form factor — ` +
-        `a larger bus raises the limit but costs volume, launch price and often power.`,
+        `Pick a lighter ${SUBSYSTEM_PLAIN[heaviest.subsystem]}, or choose a bigger satellite ` +
+        `size. A bigger one may carry more weight, but it costs more to launch and needs ` +
+        `more power to run.`,
+      technical:
+        `Total ${g(mass.totalMassG.value)} including ${(d.contingency * 100).toFixed(0)}% ` +
+        `contingency exceeds the ${mass.limitKg} kg CDS Rev. 14.1 allowance for ${d.formFactor}.`,
     };
   }
 
   const marginFrac = margin / limitG;
   if (marginFrac < 0.1) {
     return {
-      id: 'mass', title: 'Mass', status: 'warn',
-      headline: `${g(margin)} margin (${(marginFrac * 100).toFixed(0)}%)`,
+      id: 'mass', title: 'Weight', status: 'warn',
+      headline: `Only ${g(margin)} of weight to spare`,
       diagnosis:
-        `You are within the ${mass.limitKg} kg limit but with only ` +
-        `${(marginFrac * 100).toFixed(0)}% to spare. Real builds grow during integration — ` +
-        `harness, shims and brackets are rarely in the first estimate.`,
-      fix: `Aim for 10–20% margin at this stage. Raising contingency models that honestly.`,
+        `You are under the ${mass.limitKg} kg limit, but only just — ` +
+        `${(marginFrac * 100).toFixed(0)}% spare. Real satellites always get heavier while ` +
+        `they are being built: wiring, screws, brackets and glue are never in the first guess, ` +
+        `and they are never weightless.`,
+      fix:
+        `Leave yourself 10–20% spare weight at this stage. You can model that honestly by ` +
+        `raising the spare-weight setting on the left.`,
+      technical:
+        `Mass margin ${(marginFrac * 100).toFixed(0)}% of the ${mass.limitKg} kg allowance.`,
     };
   }
 
   return {
-    id: 'mass', title: 'Mass', status: 'go',
-    headline: `${g(margin)} margin`,
+    id: 'mass', title: 'Weight', status: 'go',
+    headline: `${g(margin)} of weight to spare`,
     diagnosis:
-      `${g(mass.totalMassG.value)} against a ${mass.limitKg} kg limit for ${d.formFactor}, ` +
-      `including ${(d.contingency * 100).toFixed(0)}% contingency.`,
+      `Your satellite weighs ${g(mass.totalMassG.value)} and a ${d.formFactor} may weigh up ` +
+      `to ${mass.limitKg} kg, so you have comfortable room left. That spare weight is what ` +
+      `lets you add bigger solar panels or a better radio later if you need them.`,
     fix: null,
+    technical:
+      `${g(mass.totalMassG.value)} against the ${mass.limitKg} kg CDS Rev. 14.1 allowance, ` +
+      `including ${(d.contingency * 100).toFixed(0)}% contingency.`,
   };
 }
 
@@ -160,26 +193,32 @@ function powerCard(
     const upgrade =
       upgradeCostG !== null && upgradeCostG > 0
         ? canAffordUpgrade
-          ? ` Or fit ${deployable!.name} (+${g(upgradeCostG)}, which you can afford from your ${g(mass.marginG.value)} mass margin).`
-          : ` Fitting ${deployable!.name} would add ${g(upgradeCostG)}, which you cannot afford from your ${g(mass.marginG.value)} mass margin — so the duty cycle is your lever.`
-        : ` Your array is already the largest that fits a ${d.formFactor}, so the duty cycle is your lever.`;
+          ? ` Or fit ${deployable!.name}, which fold out to catch more sunlight. They add ${g(upgradeCostG)}, and you have ${g(mass.marginG.value)} of spare weight, so you can afford them.`
+          : ` Bigger panels (${deployable!.name}) would add ${g(upgradeCostG)}, but you only have ${g(mass.marginG.value)} of spare weight — so running the instrument less is your only option here.`
+        : ` Your panels are already the largest that fit a ${d.formFactor}, so running the instrument less is your only option.`;
     return (
-      `Cut ${payload?.name ?? 'payload'} duty cycle from ` +
-      `${(d.payloadDuty * 100).toFixed(0)}% to about ` +
+      `Run the ${payload?.name ?? 'instrument'} less often — turn it down from ` +
+      `${(d.payloadDuty * 100).toFixed(0)}% of each lap to about ` +
       `${(suggestedDuty * 100).toFixed(0)}%.${upgrade}`
     );
   };
 
   if (soc.brownoutOrbit !== null) {
     return {
-      id: 'power', title: 'Power', status: 'nogo',
-      headline: `Brownout on orbit ${soc.brownoutOrbit}`,
+      id: 'power', title: 'Staying powered', status: 'nogo',
+      headline: `Battery dies on lap ${soc.brownoutOrbit}`,
       diagnosis:
-        `Battery reached ${(soc.minSoc * 100).toFixed(0)}% state of charge on orbit ` +
-        `${soc.brownoutOrbit}. You draw ${formatNumber(avgLoadW)} W orbit-average against ` +
-        `${formatNumber(avgGenW)} W generated, a deficit of ${formatNumber(-margin)} Wh ` +
-        `per orbit, and you spend ${eclipseMin.toFixed(1)} min of every orbit in eclipse.`,
+        `Your satellite uses ${say(avgLoadW, 'watts')} on average but its panels only make ` +
+        `${say(avgGenW, 'watts')}. It spends more than it earns on every lap, and after ` +
+        `${soc.brownoutOrbit} laps the battery is down to ${(soc.minSoc * 100).toFixed(0)}% ` +
+        `and the satellite shuts down. It does not come back. ` +
+        `The problem is worst because ${eclipseMin.toFixed(0)} minutes of every lap are spent ` +
+        `in Earth's shadow, where the panels make nothing at all.`,
       fix: energyFix(),
+      technical:
+        `Brownout at orbit ${soc.brownoutOrbit}; ${formatNumber(avgLoadW)} W orbit-average ` +
+        `load against ${formatNumber(avgGenW)} W generation, ${formatNumber(-margin)} Wh/orbit ` +
+        `deficit, eclipse ${eclipseMin.toFixed(1)} min.`,
     };
   }
 
@@ -189,52 +228,69 @@ function powerCard(
     const orbitsToEmpty = margin < 0 ? Math.ceil(usableWh / -margin) : null;
     const timeline =
       orbitsToEmpty !== null && Number.isFinite(orbitsToEmpty)
-        ? ` At ${formatNumber(-margin)} Wh lost per orbit it reaches the 20% floor in about ` +
-          `${orbitsToEmpty} orbits — roughly ${(orbitsToEmpty / orbitsPerDay(d.orbit)).toFixed(1)} days.`
+        ? ` At this rate the battery is flat in about ${orbitsToEmpty} laps — ` +
+          `roughly ${(orbitsToEmpty / orbitsPerDay(d.orbit)).toFixed(1)} days after launch.`
         : '';
     return {
-      id: 'power', title: 'Power', status: 'nogo',
-      headline: `${formatNumber(margin)} Wh/orbit deficit`,
+      id: 'power', title: 'Staying powered', status: 'nogo',
+      headline: `Slowly running the battery flat`,
       diagnosis:
-        `Consumption (${formatNumber(use)} Wh) exceeds generation (${formatNumber(gen)} Wh) ` +
-        `every orbit, drawing ${formatNumber(avgLoadW)} W against ${formatNumber(avgGenW)} W. ` +
-        `The battery has not hit the floor within the simulated window, but it will.${timeline}`,
+        `Your satellite uses ${say(avgLoadW, 'watts')} but only makes ${say(avgGenW, 'watts')}, ` +
+        `so it loses a little energy on every lap. Nothing looks wrong yet — the battery still ` +
+        `has charge — but it is heading one way only.${timeline}`,
       fix: energyFix(),
+      technical:
+        `Negative energy balance: ${formatNumber(use)} Wh consumed against ` +
+        `${formatNumber(gen)} Wh generated per orbit.`,
     };
   }
 
   if (soc.depthOfDischarge > DOD_WARN_FRACTION) {
     return {
-      id: 'power', title: 'Power', status: 'warn',
-      headline: `${(soc.depthOfDischarge * 100).toFixed(0)}% depth of discharge`,
+      id: 'power', title: 'Staying powered', status: 'warn',
+      headline: `Battery drains ${(soc.depthOfDischarge * 100).toFixed(0)}% every lap`,
       diagnosis:
-        `The design closes with ${formatNumber(margin)} Wh/orbit to spare, but the battery ` +
-        `cycles ${(soc.depthOfDischarge * 100).toFixed(0)}% deep every orbit. In LEO that is ` +
-        `about 5,500 cycles a year, and deep cycling shortens pack life.`,
-      fix: `Keep depth of discharge under ${(DOD_WARN_FRACTION * 100).toFixed(0)}% — a larger battery or a lower duty cycle.`,
+        `There is enough energy overall, but the battery is being worked hard: it drops ` +
+        `${(soc.depthOfDischarge * 100).toFixed(0)}% and recharges on every single lap. ` +
+        `Your satellite goes round about 5,500 times a year, and batteries wear out faster ` +
+        `the deeper you drain them each time.`,
+      fix:
+        `Keep the drain under ${(DOD_WARN_FRACTION * 100).toFixed(0)}% so the battery lasts ` +
+        `for years rather than months — either fit a bigger battery or run the instrument less often.`,
+      technical:
+        `Depth of discharge ${(soc.depthOfDischarge * 100).toFixed(0)}% per orbit at roughly ` +
+        `5,500 cycles/year in LEO; energy margin ${formatNumber(margin)} Wh/orbit.`,
     };
   }
 
   const marginPct = gen > 0 ? (margin / gen) * 100 : 0;
   if (marginPct < 15) {
     return {
-      id: 'power', title: 'Power', status: 'warn',
-      headline: `${formatNumber(margin)} Wh/orbit margin (${marginPct.toFixed(0)}%)`,
+      id: 'power', title: 'Staying powered', status: 'warn',
+      headline: `Power works, but only just`,
       diagnosis:
-        `It closes, but with only ${marginPct.toFixed(0)}% energy margin. Array output drops ` +
-        `with cell degradation and off-pointing, neither of which is modelled here.`,
-      fix: `Aim for 20% or more at this stage of design.`,
+        `You make ${marginPct.toFixed(0)}% more energy than you use. That is positive, but it ` +
+        `is a thin cushion. Solar panels get slowly weaker in space, and if the satellite ` +
+        `points imperfectly they make less than planned — neither of which this model accounts for.`,
+      fix:
+        `Aim for 20% or more spare energy at this stage, so real-world losses do not tip you ` +
+        `into the red.`,
+      technical: `Energy margin ${formatNumber(margin)} Wh/orbit (${marginPct.toFixed(0)}%).`,
     };
   }
 
   return {
-    id: 'power', title: 'Power', status: 'go',
-    headline: `${formatNumber(margin)} Wh/orbit margin`,
+    id: 'power', title: 'Staying powered', status: 'go',
+    headline: `Makes ${marginPct.toFixed(0)}% more energy than it uses`,
     diagnosis:
-      `Generating ${formatNumber(gen)} Wh per orbit against ${formatNumber(use)} Wh consumed, ` +
-      `cycling ${(soc.depthOfDischarge * 100).toFixed(0)}% deep through a ` +
-      `${eclipseMin.toFixed(1)} min eclipse.`,
+      `The panels make ${say(avgGenW, 'watts')} on average and the satellite uses ` +
+      `${say(avgLoadW, 'watts')}, so the battery refills every lap. It dips ` +
+      `${(soc.depthOfDischarge * 100).toFixed(0)}% during the ${eclipseMin.toFixed(0)} minutes ` +
+      `spent in Earth's shadow, then recharges in sunlight.`,
     fix: null,
+    technical:
+      `${formatNumber(gen)} Wh generated against ${formatNumber(use)} Wh consumed per orbit; ` +
+      `depth of discharge ${(soc.depthOfDischarge * 100).toFixed(0)}%.`,
   };
 }
 
@@ -256,13 +312,19 @@ function dataCard(
 
   if (passes.passesPerDay.value === 0) {
     return {
-      id: 'data', title: 'Data', status: 'nogo',
-      headline: 'No passes at all',
+      id: 'data', title: 'Getting data home', status: 'nogo',
+      headline: `Your satellite never flies over the antenna`,
       diagnosis:
-        `${station.name} at ${station.latDeg.toFixed(0)}° latitude never sees a satellite ` +
-        `in a ${d.orbit.inclinationDeg.toFixed(1)}° inclination orbit. The ground track ` +
-        `never reaches that far from the equator.`,
-      fix: `Raise the inclination to at least ${Math.abs(station.latDeg).toFixed(0)}°, or pick a station closer to the equator.`,
+        `${station.name} sits at ${Math.abs(station.latDeg).toFixed(0)}° latitude, but your ` +
+        `orbit is tilted only ${d.orbit.inclinationDeg.toFixed(0)}°, so the satellite never ` +
+        `travels that far from the equator. It is a perfectly good satellite that your antenna ` +
+        `will simply never see.`,
+      fix:
+        `Tilt the orbit to at least ${Math.abs(station.latDeg).toFixed(0)}° so the satellite ` +
+        `flies far enough north and south, or choose a ground station nearer the equator.`,
+      technical:
+        `Station latitude ${station.latDeg.toFixed(1)}° lies outside the ` +
+        `${d.orbit.inclinationDeg.toFixed(1)}° inclination ground-track band.`,
     };
   }
 
@@ -271,16 +333,23 @@ function dataCard(
       radio.dataRateBps * Math.pow(10, link.marginDb.value / 10),
     );
     return {
-      id: 'data', title: 'Data', status: 'nogo',
-      headline: `Link short by ${formatNumber(-link.marginDb.value)} dB`,
+      id: 'data', title: 'Getting data home', status: 'nogo',
+      headline: `Signal too weak to understand`,
       diagnosis:
-        `At ${(radio.dataRateBps / 1000).toFixed(1)} kbps the link to ${station.name} gives ` +
-        `Eb/N0 of ${formatNumber(link.ebN0Db.value)} dB at the ${station.minElevationDeg}° ` +
-        `horizon, below the ${formatNumber(link.ebN0Db.value - link.marginDb.value)} dB needed. ` +
-        `You get ${passes.passesPerDay.value} passes a day and none of them decode.`,
+        `Your satellite flies over ${station.name} ${passes.passesPerDay.value} times a day, ` +
+        `but the signal arriving is too faint to make sense of — it is ` +
+        `${formatNumber(-link.marginDb.value)} dB short, meaning roughly ` +
+        `${formatNumber(Math.pow(10, -link.marginDb.value / 10))} times weaker than it needs ` +
+        `to be. Being overhead is not the same as being heard.`,
       fix:
-        `Drop the rate to about ${(maxRate / 1000).toFixed(1)} kbps, use a higher-gain ground ` +
-        `station, or move to a higher band — note every 10x in rate costs 10 dB.`,
+        `Send the data more slowly — about ${(maxRate / 1000).toFixed(0)} kbps would work. ` +
+        `Sending slower gives each piece of data more signal strength. Or use a bigger ` +
+        `ground antenna, which is usually cheaper than changing the satellite.`,
+      technical:
+        `Eb/N0 ${formatNumber(link.ebN0Db.value)} dB at ${station.minElevationDeg}° elevation ` +
+        `against ${formatNumber(link.ebN0Db.value - link.marginDb.value)} dB required; ` +
+        `margin ${formatNumber(link.marginDb.value)} dB at ` +
+        `${(radio.dataRateBps / 1000).toFixed(1)} kbps.`,
     };
   }
 
@@ -288,55 +357,76 @@ function dataCard(
     const ratio = down > 0 ? gen / down : Infinity;
     const neededRate = (gen * 8 * 1e6) / (passes.contactMinutesPerDay.value * 60);
     return {
-      id: 'data', title: 'Data', status: 'nogo',
-      headline: `${formatNumber(gen)} MB/day generated, ${formatNumber(down)} MB/day home`,
+      id: 'data', title: 'Getting data home', status: 'nogo',
+      headline: `Making ${formatNumber(ratio)}x more data than you can send`,
       diagnosis:
-        `Your ${payload?.name ?? 'payload'} produces ${formatNumber(gen)} MB a day, but ` +
-        `${passes.passesPerDay.value} passes totalling ` +
-        `${formatNumber(passes.contactMinutesPerDay.value)} minutes at ` +
-        `${(radio.dataRateBps / 1000).toFixed(1)} kbps only bring ${formatNumber(down)} MB home. ` +
-        `The buffer fills ${formatNumber(ratio)}x faster than you can empty it, so ` +
-        `${formatNumber(gen - down)} MB a day is lost.`,
+        `Your ${payload?.name ?? 'instrument'} records ${formatNumber(gen)} MB a day. But the ` +
+        `satellite only flies over ${station.name} ${passes.passesPerDay.value} times a day, ` +
+        `for ${formatNumber(passes.contactMinutesPerDay.value)} minutes in total, which is only ` +
+        `enough to send ${formatNumber(down)} MB home. The rest — ` +
+        `${formatNumber(gen - down)} MB every day — fills up the storage and is lost. ` +
+        `The satellite works perfectly and you still never see most of the pictures.`,
       fix:
-        `You need about ${(neededRate / 1000).toFixed(0)} kbps to clear the backlog. Either ` +
-        `cut the payload duty cycle from ${(d.payloadDuty * 100).toFixed(0)}%, compress harder, ` +
-        `or move to a faster band — S-band buys roughly 100x the rate for about 95 g more and ` +
-        `a dish at the ground station.`,
+        `You would need to send about ${(neededRate / 1000).toFixed(0)} kbps to keep up. ` +
+        `Either record less often (turn the instrument down from ` +
+        `${(d.payloadDuty * 100).toFixed(0)}% of each lap), squash the data smaller before ` +
+        `sending, or fit a faster radio — an S-band radio sends about 100 times faster for ` +
+        `roughly 95 g more weight, but needs a dish on the ground.`,
+      technical:
+        `Generated ${formatNumber(gen)} MB/day against ${formatNumber(down)} MB/day downlink ` +
+        `capacity at ${(radio.dataRateBps / 1000).toFixed(1)} kbps over ` +
+        `${formatNumber(passes.contactMinutesPerDay.value)} min of contact.`,
     };
   }
 
   const utilisation = gen / Math.max(down, 1e-9);
   if (link.marginDb.value < LINK_MARGIN_WARN_DB) {
     return {
-      id: 'data', title: 'Data', status: 'warn',
-      headline: `Link margin only ${formatNumber(link.marginDb.value)} dB`,
+      id: 'data', title: 'Getting data home', status: 'warn',
+      headline: `Data gets home, but the signal is fragile`,
       diagnosis:
-        `The data closes, but with ${formatNumber(link.marginDb.value)} dB of link margin at ` +
-        `the horizon. Rain, pointing error and antenna nulls are not modelled here and will ` +
-        `eat that quickly.`,
-      fix: `Aim for ${LINK_MARGIN_GO_DB} dB. Lower the rate or improve the ground station.`,
+        `Everything fits, but your radio signal only just makes it — ` +
+        `${formatNumber(link.marginDb.value)} dB of strength to spare. Rain, a slightly ` +
+        `misaligned antenna, or local interference could each be enough to break it, and ` +
+        `none of those are modelled here.`,
+      fix:
+        `Aim for ${LINK_MARGIN_GO_DB} dB of spare signal — about four times stronger than the ` +
+        `bare minimum. Send more slowly, or use a better ground antenna.`,
+      technical: `Link margin ${formatNumber(link.marginDb.value)} dB at the elevation mask.`,
     };
   }
 
   if (utilisation > 0.8) {
     return {
-      id: 'data', title: 'Data', status: 'warn',
-      headline: `${(utilisation * 100).toFixed(0)}% of downlink capacity used`,
+      id: 'data', title: 'Getting data home', status: 'warn',
+      headline: `Using ${(utilisation * 100).toFixed(0)}% of your sending capacity`,
       diagnosis:
-        `You clear the backlog, but only just: ${formatNumber(gen)} MB generated against ` +
-        `${formatNumber(down)} MB of capacity. A missed pass puts you behind.`,
-      fix: `Leave headroom for missed passes — they happen.`,
+        `You can just about send everything home: ${formatNumber(gen)} MB recorded against ` +
+        `${formatNumber(down)} MB you can send. But there is almost no slack. Miss one pass — ` +
+        `a power glitch, bad weather, someone else using the antenna — and you fall behind ` +
+        `with no way to catch up.`,
+      fix: `Leave room for missed passes. They happen on every real mission.`,
+      technical:
+        `Downlink utilisation ${(utilisation * 100).toFixed(0)}% ` +
+        `(${formatNumber(gen)} / ${formatNumber(down)} MB per day).`,
     };
   }
 
   return {
-    id: 'data', title: 'Data', status: 'go',
-    headline: `${formatNumber(down)} MB/day capacity, ${formatNumber(gen)} MB/day used`,
+    id: 'data', title: 'Getting data home', status: 'go',
+    headline: `All your data gets home`,
     diagnosis:
-      `${passes.passesPerDay.value} passes a day over ${station.name}, ` +
-      `${formatNumber(passes.contactMinutesPerDay.value)} minutes of contact, ` +
-      `${formatNumber(link.marginDb.value)} dB link margin at the horizon.`,
+      `Your satellite passes over ${station.name} ${passes.passesPerDay.value} times a day, ` +
+      `giving ${formatNumber(passes.contactMinutesPerDay.value)} minutes to talk. That is ` +
+      `enough to send ${formatNumber(down)} MB, and you only record ${formatNumber(gen)} MB — ` +
+      `so nothing is lost, and the signal has ${formatNumber(link.marginDb.value)} dB of ` +
+      `strength to spare.`,
     fix: null,
+    technical:
+      `${passes.passesPerDay.value} passes/day, ` +
+      `${formatNumber(passes.contactMinutesPerDay.value)} min contact, ` +
+      `link margin ${formatNumber(link.marginDb.value)} dB, ` +
+      `${formatNumber(gen)}/${formatNumber(down)} MB per day.`,
   };
 }
 
