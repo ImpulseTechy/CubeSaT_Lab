@@ -46,12 +46,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Requires Pages to be enabled once, by hand:
+      #   Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+      # The `enablement` option exists but the default workflow token is not
+      # permitted to turn Pages on, so relying on it just fails here instead.
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          # Turns Pages on automatically the first time, so there is no
-          # separate click in Settings before the first deploy works.
-          enablement: true
 
       - name: Upload the built site
         uses: actions/upload-pages-artifact@v3
