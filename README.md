@@ -72,7 +72,17 @@ Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no
 6. **How do I build one?** — an eight-stage roadmap with honest timescales, costs, what goes
    wrong at each stage, and how to tell when you have finished it
 
-**Design one** — the simulator (every design is a shareable link):
+**Fly a CanSat** — the thing a student can actually build this weekend:
+- Pick a launch (drone, 1 km drop, weather balloon), size the parachute, choose a
+  radio setting and a battery
+- Watch the flight happen, split between **what really happened** and **what arrived
+  on your laptop** — because on a real flight you only ever get the second one
+- Switch on a real mistake and fly again: wrong sensor address, unflushed SD card,
+  half-charged battery, GPS left in its default mode
+- Read the report: landing speed, how far you have to walk, packets home, and what
+  went wrong in plain language
+
+**Design one** — the orbital simulator (every design is a shareable link):
 - Configure a 1U–6U CubeSat from a parts catalogue; live mass budget against CDS Rev. 14.1
 - Orbit selection with eclipse geometry, beta angle and J2 nodal regression
 - Battery state-of-charge over six orbits with eclipse bands and the brownout floor

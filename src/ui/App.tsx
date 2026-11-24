@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { DEFAULT_DESIGN, EXAMPLE_DESIGNS, type Design } from '../physics/design';
 import { DesignView } from './DesignView';
 import { LearnView } from './LearnView';
+import { CanSatView } from './CanSatView';
 import { designFromUrl, loadLocally, saveLocally, syncUrl } from './share';
 
-type View = 'learn' | 'design';
+type View = 'learn' | 'cansat' | 'design';
 
 const TABS: { id: View; label: string; hint: string }[] = [
   { id: 'learn', label: 'Start here', hint: 'What a CubeSat is and how to build one' },
+  { id: 'cansat', label: 'Fly a CanSat', hint: 'Build the thing you can actually make this weekend' },
   { id: 'design', label: 'Design one', hint: 'Build a satellite and see if it survives' },
 ];
 
@@ -75,17 +77,26 @@ export default function App() {
         <span className="stamp">teaching model — do not fly hardware on it</span>
       </header>
 
-      {view === 'learn' ? (
+      {view === 'cansat' ? (
+        <div className="learn-scroll">
+          <CanSatView />
+        </div>
+      ) : view === 'learn' ? (
         <div className="learn-scroll">
           <LearnView onLoadExample={loadExample} />
           <div className="handoff">
             <p>
-              That is the whole picture. When you are ready, go and build one
-              &mdash; break it, read why it broke, and fix it. Nothing here costs
-              anything, and nothing you do is permanent.
+              That is the whole picture. Now go and build something &mdash; break
+              it, read why it broke, and fix it. A CanSat is where almost every
+              real satellite team starts, and it is the one you could actually
+              make this weekend.
             </p>
-            <button onClick={() => { setView('design'); window.scrollTo({ top: 0 }); }}>
-              Design a satellite &rarr;
+            <button onClick={() => { setView('cansat'); window.scrollTo({ top: 0 }); }}>
+              Fly a CanSat &rarr;
+            </button>
+            <button className="secondary"
+                    onClick={() => { setView('design'); window.scrollTo({ top: 0 }); }}>
+              Design a satellite
             </button>
           </div>
         </div>
