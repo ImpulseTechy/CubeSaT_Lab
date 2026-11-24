@@ -1018,3 +1018,37 @@ a { color: var(--accent); }
   border-left: 3px solid var(--warn); background: var(--warn-bg);
 }
 .pf-caption.dark { border-left-color: var(--nogo); background: var(--nogo-bg); }
+
+/* =========================================================================
+   Landing hero — the first screen must move
+   ========================================================================= */
+
+.hero-split {
+  display: grid; grid-template-columns: 1fr 300px; gap: 34px;
+  align-items: center; margin-bottom: 26px;
+}
+@media (max-width: 860px) {
+  .hero-split { grid-template-columns: 1fr; gap: 20px; }
+  .hero-cube { order: -1; }
+}
+
+.hero-cube {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  background: var(--paper-2); border: 1px solid var(--rule-strong);
+  border-radius: 3px; padding: 26px 18px 18px; min-height: 290px;
+  justify-content: center;
+}
+.hero-cap {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-60);
+  text-align: center; line-height: 1.5;
+}
+.hero-sizes { max-width: 220px; margin-top: 4px; }
+
+.cn-play { font-size: 8px; color: var(--go); margin-left: 2px; }
+.chapter-nav button[aria-pressed='true'] .cn-play { color: rgba(255,255,255,0.85); }
+
+.inline-link {
+  background: none; border: none; padding: 0; font: inherit;
+  color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: underline;
+}
+.inline-link:hover { color: #1f3c72; }

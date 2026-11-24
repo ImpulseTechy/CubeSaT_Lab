@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Anatomy } from './Anatomy';
 import { AssemblyAnimation } from './AssemblyAnimation';
+import { Cube, CUBE_SHAPES } from './CubeStack';
 import { PowerFlow, SubsystemTree } from './PowerSystem';
 import { findNode, TREES } from './content/trees';
 import { HowItWorks, Roadmap, Types } from './chapters';
@@ -8,11 +9,11 @@ import { EXAMPLES, FACTS, FAILURE_FACTS, SUBSYSTEMS } from './learn';
 
 type Chapter = 'what' | 'works' | 'types' | 'inside' | 'fail' | 'build';
 
-const CHAPTERS: { id: Chapter; label: string; q: string }[] = [
-  { id: 'what', label: 'What is it?', q: 'What is a CubeSat?' },
-  { id: 'works', label: 'How does it work?', q: 'How does a CubeSat work?' },
-  { id: 'types', label: 'What types are there?', q: 'What types of CubeSat are there?' },
-  { id: 'inside', label: 'What is inside?', q: 'What is inside one?' },
+const CHAPTERS: { id: Chapter; label: string; q: string; moves?: boolean }[] = [
+  { id: 'what', label: 'What is it?', q: 'What is a CubeSat?', moves: true },
+  { id: 'works', label: 'How does it work?', q: 'How does a CubeSat work?', moves: true },
+  { id: 'types', label: 'What types are there?', q: 'What types of CubeSat are there?', moves: true },
+  { id: 'inside', label: 'What is inside?', q: 'What is inside one?', moves: true },
   { id: 'fail', label: 'Why do they fail?', q: 'Why do satellites fail?' },
   { id: 'build', label: 'How do I build one?', q: 'How do I actually build one?' },
 ];
@@ -36,11 +37,12 @@ export function LearnView({ onLoadExample }: { onLoadExample: (id: string) => vo
           <button key={c.id} aria-pressed={chapter === c.id} onClick={() => go(c.id)}>
             <span className="cn-n">{i + 1}</span>
             {c.label}
+            {c.moves && <span className="cn-play" title="has something interactive">&#9654;</span>}
           </button>
         ))}
       </nav>
 
-      {chapter === 'what' && <WhatIsIt />}
+      {chapter === 'what' && <WhatIsIt go={go} />}
       {chapter === 'works' && <HowItWorks />}
       {chapter === 'types' && <Types onLoadExample={onLoadExample} />}
       {chapter === 'inside' && <Inside />}
@@ -59,15 +61,42 @@ export function LearnView({ onLoadExample }: { onLoadExample: (id: string) => vo
 
 // ---------------------------------------------------------------------------
 
-function WhatIsIt() {
+function WhatIsIt({ go }: { go: (c: Chapter) => void }) {
+  const [units, setUnits] = useState<'1U' | '3U' | '6U'>('3U');
+
   return (
     <div className="chapter">
       <h2>What is a CubeSat?</h2>
-      <p className="big">
-        A CubeSat is a satellite built from 10&nbsp;centimetre cubes. One cube,
-        about the size of a Rubik&rsquo;s cube, weighs up to 2&nbsp;kg. You can
-        stack them &mdash; three in a row is the most common size students build.
-      </p>
+
+      <div className="hero-split">
+        <div>
+          <p className="big">
+            A CubeSat is a satellite built from 10&nbsp;centimetre cubes. One cube,
+            about the size of a Rubik&rsquo;s cube, weighs up to 2&nbsp;kg. You can
+            stack them &mdash; three in a row is the most common size students build.
+          </p>
+          <p>
+            This is a real one, turning. Try the other sizes.
+          </p>
+          <div className="seg wrap hero-sizes">
+            {(['1U', '3U', '6U'] as const).map((u) => (
+              <button key={u} aria-pressed={units === u} onClick={() => setUnits(u)}>
+                {u}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="hero-cube">
+          <Cube spec={CUBE_SHAPES[units]} spin wings={units === '6U'} size={0.9} />
+          <span className="hero-cap">
+            {units === '1U' && 'One cube. About the size of a Rubik\u2019s cube.'}
+            {units === '3U' && 'Three stacked. Roughly a loaf of bread.'}
+            {units === '6U' && 'Six, with fold-out wings. About a shoebox.'}
+          </span>
+        </div>
+      </div>
+
       <p>
         Before 1999, every satellite was a one-off, and only governments and large
         companies could afford one. Then two universities, Stanford and Cal Poly,
@@ -88,6 +117,16 @@ function WhatIsIt() {
             <span className="d">{f.v}</span>
           </div>
         ))}
+      </div>
+
+      <div className="aside wide">
+        <span className="aside-label">See it working</span>
+        The next chapter has a satellite going round Earth that you can watch
+        &mdash; charging in sunlight, draining in the dark, and sending its data
+        home in the few minutes a day it can.{' '}
+        <button className="inline-link" onClick={() => go('works')}>
+          Watch one lap &rarr;
+        </button>
       </div>
     </div>
   );
