@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   altitudeFromPressure, densityKgM3, pressurePa, SEA_LEVEL_PRESSURE_PA,
-  speedOfSound, temperatureC, temperatureK, TROPOPAUSE_M,
+  speedOfSound, temperatureC, TROPOPAUSE_M,
 } from './atmosphere';
 import {
   CAN_BODY_AREA_M2, landingOutcome, landingSpeed, requiredChuteDiameter,
