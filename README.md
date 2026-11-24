@@ -50,12 +50,16 @@ Run the tests with `npm test`. Production build is 62 kB gzipped, no backend, no
 
 ### What works today
 
-**Start here** — a complete beginner's on-ramp:
-- What a CubeSat is, in plain language, with scale and history
-- An interactive cutaway: click any part to learn what it does and what happens when it fails
-- Why satellites really fail (40%+ of first university CubeSats, ~half from integration)
-- Three worked example designs that load straight into the simulator
-- A six-step guide from CanSat to launch programme
+**Start here** — six chapters for a complete beginner, no prior knowledge assumed:
+1. **What is it?** — size, history, and why a standard shape made student satellites possible
+2. **How does it work?** — an animated orbit showing the whole operating loop: charging in
+   sunlight, draining in Earth's shadow, and the few minutes a day it can send data home
+3. **What types are there?** — five sizes drawn to scale as rotating 3D cubes, plus six kinds
+   of mission and what makes each one hard
+4. **What is inside?** — an interactive cutaway; click any part for what it does and how it fails
+5. **Why do they fail?** — the real numbers, and the finding that justifies this whole project
+6. **How do I build one?** — an eight-stage roadmap with honest timescales, costs, what goes
+   wrong at each stage, and how to tell when you have finished it
 
 **Design one** — the simulator:
 - Configure a 1U–6U CubeSat from a parts catalogue; live mass budget against CDS Rev. 14.1

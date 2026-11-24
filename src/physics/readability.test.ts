@@ -18,6 +18,9 @@ import { evaluate, type VerdictCard } from './verdict';
 import { GLOSSARY } from '../ui/glossary';
 import { CATALOGUE } from '../data/catalogue';
 import { ATTITUDE_ASSUMPTIONS } from './power';
+import { DAY_IN_THE_LIFE, THREE_JOBS, WORKS_INTRO } from '../ui/content/works';
+import { MISSION_TYPES, SIZE_TYPES } from '../ui/content/types';
+import { STAGES } from '../ui/content/roadmap';
 
 /**
  * Terms that must never appear in learner-facing copy without being explained.
@@ -163,6 +166,59 @@ describe('attitude choices are explained in plain words', () => {
       expect(a.rationale.length).toBeGreaterThan(60);
     });
   }
+});
+
+describe('the beginner chapters stay in plain language', () => {
+  // Everything a first-year reads before they ever reach the simulator.
+  const all = [
+    ...DAY_IN_THE_LIFE.flatMap((p) => [p.title, p.short, p.body, p.analogy ?? '']),
+    WORKS_INTRO.lead, WORKS_INTRO.body, WORKS_INTRO.weightless,
+    ...THREE_JOBS.flatMap((j) => [j.title, j.body]),
+    ...SIZE_TYPES.flatMap((s) => [s.typicalUse, s.goodFor, s.catch, s.everydayComparison]),
+    ...MISSION_TYPES.flatMap((m) => [m.name, m.oneLiner, m.what, m.hardPart, m.realExample]),
+    ...STAGES.flatMap((s) => [s.title, s.what, s.goesWrong, s.milestone, ...s.doNow]),
+  ].join('  ');
+
+  const BANNED_HERE = [
+    /\bsubsystem\b/i, /\bpayload\b/i, /\bdowlink\b/i, /\bdownlink\b/i,
+    /\btelemetry\b/i, /\battitude\b/i, /\bnadir\b/i, /\bapogee\b/i,
+    /\bperigee\b/i, /\binclination\b/i, /\bEb\/N0\b/i, /\bdBi?\b/,
+    /\bEPS\b/, /\bADCS\b/, /\bOBC\b/, /\bCOTS\b/, /\bLEO\b/,
+    /\bduty cycle\b/i, /\bdepth of discharge\b/i, /\bwatt-hours? per orbit\b/i,
+  ];
+
+  for (const rx of BANNED_HERE) {
+    it(`never says ${rx.source}`, () => {
+      const hit = all.match(new RegExp(`.{0,60}${rx.source}.{0,60}`, rx.flags));
+      expect(hit?.[0] ?? null).toBeNull();
+    });
+  }
+
+  it('leads with an everyday comparison for every size', () => {
+    for (const s of SIZE_TYPES) {
+      expect(s.everydayComparison.length, s.name).toBeGreaterThan(5);
+    }
+  });
+
+  it('gives most phases of the day a concrete analogy', () => {
+    const withAnalogy = DAY_IN_THE_LIFE.filter((p) => p.analogy);
+    expect(withAnalogy.length).toBeGreaterThanOrEqual(DAY_IN_THE_LIFE.length - 1);
+  });
+
+  it('tells the learner what goes wrong at every stage of the roadmap', () => {
+    for (const s of STAGES) {
+      expect(s.goesWrong.length, s.title).toBeGreaterThan(50);
+      expect(s.milestone.length, s.title).toBeGreaterThan(25);
+      expect(s.doNow.length, s.title).toBeGreaterThan(1);
+    }
+  });
+
+  it('is honest about time and cost at every stage', () => {
+    for (const s of STAGES) {
+      expect(s.time.length, s.title).toBeGreaterThan(3);
+      expect(s.cost.length, s.title).toBeGreaterThan(3);
+    }
+  });
 });
 
 describe('glossary', () => {
